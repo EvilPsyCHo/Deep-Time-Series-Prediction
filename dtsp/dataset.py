@@ -4,7 +4,7 @@
 @contact: evilpsycho42@gmail.com
 @time   : 2019/11/6 15:02
 """
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset
 import numpy as np
 
 
@@ -55,7 +55,4 @@ def create_dataset(x, enc_lens, dec_lens, n_valid, n_test, normalization=True):
     valid = TorchSimpleSeriesDataSet(x_valid, enc_lens, dec_lens)
     test = TorchSimpleSeriesDataSet(x_test, enc_lens, dec_lens)
     return train, valid, test
-
-
-from fastai.basic_train import Learner
 

@@ -6,7 +6,6 @@
 """
 import torch
 from torch import nn
-from fastai.basic_train import Learner
 
 
 class SimpleSeq2Seq(nn.Module):

@@ -1,25 +1,12 @@
-# encoding: utf-8
-# Author: 周知瑞
-# Mail: evilpsycho42@gmail.com
-import torch
+# coding: utf-8
+"""
+@Author: zhirui zhou
+@Contact: evilpsycho42@gmail.com
+@Time: 2019/11/7 上午1:37
+"""
 from torch import nn
+import torch
 
-
-class CausalConv1d_v2(torch.nn.Conv1d):
-
-    def forward(self, inputs):
-        result = super(CausalConv1d, self).forward(inputs)
-        if self.padding != 0:
-            return result[:, :, : -self.padding[0]]
-        return result
-
-l = CausalConv1d(1, 1, 2, dilation=2, bias=False)
-nn.init.constant_(l.weight.data, 1.)
-
-import numpy as np
-x = torch.tensor(np.random.rand(5).reshape(1, 1, -1)).float()
-x
-l(x)
 
 class CausalConv1d(torch.nn.Conv1d):
 
