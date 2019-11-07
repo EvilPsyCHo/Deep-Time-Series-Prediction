@@ -14,7 +14,7 @@ from fastai.basic_train import Learner
 from fastai.callbacks import EarlyStoppingCallback
 
 # config
-data_lens = 2000
+data_lens = 200
 enc_lens = 50
 dec_lens = 30
 n_valid = 10
@@ -41,13 +41,13 @@ loss_fn = nn.MSELoss()
 
 learner = Learner(bunch, model, optimizer, loss_fn)
 early_stop = EarlyStoppingCallback(learner, patience=10)
-# learner.lr_find()
-# learner.recorder.plot()
-learner.fit_one_cycle(cyc_len=10)
+learner.lr_find()
+learner.recorder.plot()
+learner.fit_one_cycle()
 learner.recorder.plot_lr(show_moms=True)
 learner.recorder.plot_losses()
 
-learner.fit(100, lr=lr, callbacks=[early_stop])
+learner.fit(10, lr=lr, callbacks=[early_stop])
 learner.validate(test_dl)
 
 
@@ -55,7 +55,7 @@ import torch
 import matplotlib.pyplot as plt
 
 
-def test_plot(x):
+def plot(x):
     (enc, _), y_true = test[x]
     step = y_true.shape[0]
     y_pred = learner.model.predict(torch.tensor(enc.reshape(1, -1, 1)), step)
@@ -67,4 +67,4 @@ def test_plot(x):
     plt.plot(range(len(enc), len(enc) + step), y_true, label='true')
     plt.legend()
 
-test_plot(0)
+plot(5)

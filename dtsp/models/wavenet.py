@@ -5,7 +5,7 @@ import torch
 from torch import nn
 
 from dtsp.mudules import ResidualGatedBlock
-from dtsp.dataset import log_sin
+
 
 class SimpleWaveNet(nn.Module):
 

@@ -1,4 +1,4 @@
 # encoding: utf-8
 # Author: 周知瑞
 # Mail: evilpsycho42@gmail.com
-from .wavenet import SimpleWaveNet
+from .simple_seq2seq import SimpleSeq2Seq
