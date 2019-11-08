@@ -18,16 +18,16 @@ ma = {1: 0.62, 2: 0.20, 6: 0.18}
 var = 1.
 n_test = 30
 
-series = arima(1000, ar=ar, ma=ar, var=var)
-mu = series[:n_test+dec_lens].mean()
+series = arima(data_lens, ar=ar, ma=ar, var=var)
+mu = series[:-(n_test+dec_lens)].mean()
 std = series[:n_test+dec_lens].std()
 series = (series - mu) / std
-f = plt.plot(series)
-f.show()
+plt.plot(series)
+
 
 trainset, validset = create_simple_seq2seq_dataset(series, enc_lens, dec_lens, n_test)
 model = SimpleSeq2Seq(1, 32, "D:\save", dropout=0.1, verbose=1)
-history = model.fit_generator(trainset, validset, epochs=20, verbose=2, shuffle=True)
+history = model.fit_generator(trainset, validset, epochs=10, verbose=2, shuffle=True)
 
 model.plot_loss()
 
@@ -44,4 +44,4 @@ def plot_prediction(idx):
     plt.legend()
     return f
 
-plot_prediction(0)
+plot_prediction(29)

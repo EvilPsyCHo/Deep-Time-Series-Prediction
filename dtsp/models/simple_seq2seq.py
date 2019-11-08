@@ -16,10 +16,10 @@ import matplotlib.pyplot as plt
 class SimpleSeq2Seq(object):
 
     def __init__(self, target_dim, hidden_size, save_dir, optimizer='default',
-                 activation='tanh', dropout=.0, verbose=0, loss='mse', metrics=['mae']):
+                 activation='tanh', dropout=.0, verbose=0, loss_fn='mse', metrics=['mae']):
         self.save_dir = save_dir
         self.verbose = verbose
-        self.loss = loss
+        self.loss_fn = loss_fn
         self.metrics = metrics
         self.history = None
         if optimizer == 'default':
@@ -44,7 +44,7 @@ class SimpleSeq2Seq(object):
         dec_outputs = dec_dense(dec_outputs)
 
         model = Model([enc_input, dec_input], dec_outputs)
-        model.compile(loss=self.loss, optimizer=self.opt, metrics=self.metrics)
+        model.compile(loss=self.loss_fn, optimizer=self.opt, metrics=self.metrics)
         self.model = model
 
         self.enc_model = Model(enc_input, enc_states)
