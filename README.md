@@ -13,19 +13,27 @@ SOTA DeepLearning Models for Time Series Prediction and implemented by Keras and
 
 Example code in [1_Use_SimpleSeq2Seq_SimpleWaveNet_for_arima_curve_prediction](/notebooks/1_Use_SimpleSeq2Seq_SimpleWaveNet_for_arima_curve_prediction.ipynb)
 
-![](/assets/1_arima_curve.png)
+![](./assets/1_arima_curve.png)
 
 - seq2seq
 
-![seq2seq 1](/assets/1_seq2seq_pred_0.png)
+![seq2seq 1](./assets/1_seq2seq_pred_0.png)
 
-![seq2seq 2](/assets/1_seq2seq_pred_39.png)
+![seq2seq 2](./assets/1_seq2seq_pred_39.png)
 
 - wavenet
 
 ![wavenet 1](/assets/1_wavenet_pred_0.png)
 
 ![wavenet 2](/assets/1_wavenet_pred_39.png)
+
+## Usage
+
+Need install Keras first, and just dowload repo.
+
+```shell
+python setup.py install
+```
 
 ## Tricks
 
