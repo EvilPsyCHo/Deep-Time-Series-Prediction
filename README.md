@@ -23,13 +23,13 @@ Example code in [1_Use_SimpleSeq2Seq_SimpleWaveNet_for_arima_curve_prediction](/
 
 - wavenet
 
-![wavenet 1](/assets/1_wavenet_pred_0.png)
+![wavenet 1](./assets/1_wavenet_pred_0.png)
 
-![wavenet 2](/assets/1_wavenet_pred_39.png)
+![wavenet 2](./assets/1_wavenet_pred_39.png)
 
 ## Usage
 
-Need install Keras first, and just dowload repo.
+Need install Keras first, and then dowload repo.
 
 ```shell
 python setup.py install
