@@ -7,6 +7,29 @@ SOTA DeepLearning Models for Time Series Prediction and implemented by Keras and
 - [x] Wavenet
 - [ ] GANs
 
+## Quick Start
+
+```python
+from dtsp.dataset import create_simple_wavenet_dataset
+from dtsp.models import SimpleWaveNet
+
+series = np.sin(1000)
+target_dim = 1
+enc_lens = 20
+dec_lens = 10
+n_test = 20
+batch_size = 16
+filters = 36
+n_layers = 7
+
+trainset, validset = create_simple_wavenet_dataset(series, enc_lens, dec_lens, n_test, batch_size)
+
+model = SimpleWaveNet(target_dim, dec_lens, filters, n_layers, "your_save_dir")
+model.fit_generator(trainset, validset, epochs=100)
+
+result = model.predict(series[-enc_lens:].reshape(-1, 1), predict_lens=10)
+```
+
 ## Examples
 
 ### Arima Curve Prediction
