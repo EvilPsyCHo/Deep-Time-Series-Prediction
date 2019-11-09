@@ -1,23 +1,31 @@
 # Deep-Time-Series-Prediction
-All state of the art DeepLearning methods for Time Series Prediction and implemented by Keras and Pytorch.
+SOTA DeepLearning Models for Time Series Prediction and implemented by Keras and Pytorch.
 
 ## Models
 
-- [x] RNN/CNN Attention Sequence to Sequence
-
+- [x] Seq2Seq
 - [x] Wavenet
-
-- [ ] Bert
-
 - [ ] GANs
 
-- [ ] [Temporal Pattern Attention](https://github.com/gantheory/TPA-LSTM) 
+## Examples
 
-  Variables based attention, not time step.
+### Arima Curve Prediction
 
-- [ ] [LSTnet](https://github.com/laiguokun/LSTNet/blob/master/models/LSTNet.py)
+Example code in [1_Use_SimpleSeq2Seq_SimpleWaveNet_for_arima_curve_prediction](/notebooks/1_Use_SimpleSeq2Seq_SimpleWaveNet_for_arima_curve_prediction.ipynb)
 
-  Modeling Long- and Short-Term Temporal Patterns with Deep Neural Networks
+![](/assets/1_arima_curve.png)
+
+- seq2seq
+
+![seq2seq 1](/assets/1_seq2seq_pred_0.png)
+
+![seq2seq 2](/assets/1_seq2seq_pred_39.png)
+
+- wavenet
+
+![wavenet 1](/assets/1_wavenet_pred_0.png)
+
+![wavenet 2](/assets/1_wavenet_pred_39.png)
 
 ## Tricks
 
@@ -26,7 +34,7 @@ All state of the art DeepLearning methods for Time Series Prediction and impleme
 - [SMAC3](https://automl.github.io/SMAC3/stable/) Hyperparameter Optimizer
 - Hard encode the long lagged data
 - [COCOB optimizer](https://arxiv.org/abs/1705.07795)
-- Checkpoint & Seed Ensemble to reduce varience
+- Checkpoint & Seed Ensemble
 
 ## Refs
 

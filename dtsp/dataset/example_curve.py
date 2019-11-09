@@ -32,5 +32,3 @@ def arima(lens, ar, ma, var=1, c=0, period=12):
         y[i] = c + np.dot(y[auto_index], auto_coff) + np.dot(epsilon[mov_index], mov_coff) + epsilon[
             i] + 0.5 * np.sin(np.pi * i / period)
     return y[max_lag + 1:]
-
-

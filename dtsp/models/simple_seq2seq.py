@@ -5,9 +5,8 @@
 @time   : 2019/11/7 9:33
 """
 import os
-from keras.layers import Input, Dense, LSTM, Dropout
+from keras.layers import Input, Dense, LSTM, Dropout, Activation
 from keras.models import Model, Sequential
-from keras.optimizers import Adam
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 import numpy as np
 import matplotlib.pyplot as plt
@@ -15,17 +14,14 @@ import matplotlib.pyplot as plt
 
 class SimpleSeq2Seq(object):
 
-    def __init__(self, target_dim, hidden_size, save_dir, optimizer='default',
+    def __init__(self, target_dim, hidden_size, save_dir, optimizer='adam',
                  activation='tanh', dropout=.0, verbose=0, loss_fn='mse', metrics=['mae']):
         self.save_dir = save_dir
         self.verbose = verbose
         self.loss_fn = loss_fn
         self.metrics = metrics
         self.history = None
-        if optimizer == 'default':
-            self.opt = Adam(lr=0.001, beta_2=0.99, decay=0.001)
-        elif callable(optimizer) or isinstance(optimizer, str):
-            self.opt = optimizer
+        self.opt = optimizer
 
         enc_input = Input((None, target_dim), name='enc_input')
         enc_rnn = LSTM(hidden_size, return_state=True, name='encoder_rnn')
@@ -37,13 +33,14 @@ class SimpleSeq2Seq(object):
         dec_outputs, dec_h, dec_c = dec_rnn(dec_input, initial_state=enc_states)
 
         dec_dense = Sequential([
+            Activation(activation),
             Dropout(dropout, name='dense_dropout_1'),
             Dense(hidden_size * 2, activation=activation, name='dense_1'),
             Dropout(dropout, name='dense_dropout_2'),
             Dense(target_dim, name='dense_2')])
-        dec_outputs = dec_dense(dec_outputs)
+        dense_outputs = dec_dense(dec_outputs)
 
-        model = Model([enc_input, dec_input], dec_outputs)
+        model = Model([enc_input, dec_input], dense_outputs)
         model.compile(loss=self.loss_fn, optimizer=self.opt, metrics=self.metrics)
         self.model = model
 
@@ -52,8 +49,8 @@ class SimpleSeq2Seq(object):
         dec_state_inputs = [Input(shape=(hidden_size,)), Input(shape=(hidden_size,))]
         dec_outputs, dec_h, dec_c = dec_rnn(dec_input, initial_state=dec_state_inputs)
         dec_states = [dec_h, dec_c]
-        dec_outputs = dec_dense(dec_outputs)
-        self.dec_model = Model([dec_input] + dec_state_inputs, [dec_outputs] + dec_states)
+        dense_outputs = dec_dense(dec_outputs)
+        self.dec_model = Model([dec_input] + dec_state_inputs, [dense_outputs] + dec_states)
 
     def fit(self, *args, **kwargs):
         save_path = os.path.join(self.save_dir, "model_{epoch:03d}-{val_loss:.4f}.hdf5")
@@ -70,7 +67,6 @@ class SimpleSeq2Seq(object):
                       epochs=1,
                       verbose=1,
                       validation_steps=None,
-                      validation_freq=1,
                       class_weight=None,
                       max_queue_size=10,
                       workers=1,
@@ -88,7 +84,6 @@ class SimpleSeq2Seq(object):
                                            callbacks=callbacks,
                                            validation_data=validation_data,
                                            validation_steps=validation_steps,
-                                           validation_freq=validation_freq,
                                            class_weight=class_weight,
                                            max_queue_size=max_queue_size,
                                            workers=workers,
@@ -122,4 +117,3 @@ class SimpleSeq2Seq(object):
         plt.plot(h['loss'], label='train_loss')
         plt.plot(h['val_loss'], label='val_loss')
         plt.legend()
-        return f

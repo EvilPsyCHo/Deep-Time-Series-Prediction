@@ -6,7 +6,7 @@
 """
 
 from dtsp.dataset import log_sin_curve, create_dataset
-from dtsp.torch_models.seq2seq import SimpleSeq2Seq
+from dtsp.store.torch_models.seq2seq import SimpleSeq2Seq
 from torch import nn
 from torch.utils.data import DataLoader
 from fastai.basic_data import DataBunch, AdamW

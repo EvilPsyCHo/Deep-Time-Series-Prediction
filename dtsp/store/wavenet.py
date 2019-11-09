@@ -4,7 +4,7 @@
 import torch
 from torch import nn
 
-from dtsp.mudules import ResidualGatedBlock
+from dtsp.store.mudules import ResidualGatedBlock
 
 
 class SimpleWaveNet(nn.Module):
