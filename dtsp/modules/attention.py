@@ -4,18 +4,35 @@
 @contact: evilpsycho42@gmail.com
 @time   : 2019/11/7 16:49
 """
-import keras.backend as K
-from keras.layers import Layer, Dense
+import math
+import torch
+import torch.nn as nn
 
 
-class GeneralAttention(Layer):
+class GeneralAttention(nn.Module):
 
-    def __init__(self):
-        # self.hidden_size = hidden_size
+    def __init__(self, size, bias=True):
         super(GeneralAttention, self).__init__()
+        self.Wq = nn.Linear(size, size, bias=bias)
+        self.scale_factor = math.sqrt(size)
 
-    def build(self, input_shape):
-        hidden_size = input_shape[0][0]
-        self.W = Dense(hidden_size)
+    def forward(self, q, k):
+        """General Attention for rnn-based seq2seq.
 
-        super(GeneralAttention, self).build(input_shape)
+        Parameters
+        ----------
+        q: decoder i-th step output, shape=(1, B, H)
+        k: encoder all steps outputs, shape=(S, B, H)
+
+        Returns
+        -------
+        weight: attention weight
+        attn_value: attention weight value
+        """
+        k = k.transpose(0, 1)
+        q = q.transpose(0, 1)
+        q = self.wq(q)
+        energy = torch.bmm(q, k) / self.scale_factor  # (B, 1, S)
+        weight = torch.softmax(energy, dim=-1)  # (B, 1, S)
+        attn_value = torch.bmm(weight, k)  # (B, 1, H)
+        return weight, attn_value
