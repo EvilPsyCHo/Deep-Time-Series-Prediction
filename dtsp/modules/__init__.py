@@ -1,9 +1,8 @@
-# coding: utf-8
+# encoding: utf-8
 """
-@Author: zhirui zhou
-@Contact: evilpsycho42@gmail.com
-@Time: 2019/11/9 下午4:15
+@author : zhirui zhou
+@contact: evilpsycho42@gmail.com
+@time   : 2019/11/19 14:03
 """
-from .attention import GeneralAttention
-from .encoder import Encoder
-from .decoder import Decoder, AttentionDecoder
+from .decoder import BasicRNNDecoder
+from .encoder import BasicRNNEncoder

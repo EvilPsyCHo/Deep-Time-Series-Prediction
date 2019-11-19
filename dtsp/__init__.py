@@ -1,3 +1,6 @@
 # encoding: utf-8
-# Author: 周知瑞
-# Mail: evilpsycho42@gmail.com
+"""
+@author : zhirui zhou
+@contact: evilpsycho42@gmail.com
+@time   : 2019/11/19 14:03
+"""

@@ -36,11 +36,3 @@ class SimpleSeq2Seq(nn.Module):
         else:
             outputs, _ = self.decoder(dec_input_seqs, hidden)
         return outputs
-
-
-class Seq2Seq:
-    pass
-
-
-class ConditionSeq2Seq:
-    pass

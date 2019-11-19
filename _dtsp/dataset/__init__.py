@@ -6,5 +6,4 @@
 """
 from .dataset import *
 from .utils import *
-from .curve import log_sin, arima
-from .example_datasets import example_simple_seq2seq_arima
+from .example_curve import log_sin, arima

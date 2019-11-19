@@ -10,11 +10,11 @@ from setuptools import setup
 
 
 setup(
-    name='dtsp',
+    name='_dtsp',
     version='0.1',
     description='Time Series Prediction Library',
     author='zhirui zhou',
     author_email='evilpsycho42@gmail.com',
     url='https://github.com/EvilPsyCHo/competition',
-    packages={'dtsp', 'dtsp.dataset', 'dtsp.models'},
+    packages={'_dtsp', '_dtsp.dataset', '_dtsp.models'},
 )
