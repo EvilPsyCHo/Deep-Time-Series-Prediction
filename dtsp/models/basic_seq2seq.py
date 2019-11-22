@@ -15,12 +15,12 @@ import pytorch_lightning as pl
 
 class BasicSeq2Seq(pl.LightningModule):
 
-    def __init__(self, hp):
+    def __init__(self, hparams):
         super(BasicSeq2Seq, self).__init__()
-        self.hp = hp
+        self.hparams = hparams
         self.loss_fn = nn.MSELoss()
-        self.encoder = BasicRNNEncoder(**hp)
-        self.decoder = BasicRNNDecoder(**hp)
+        self.encoder = BasicRNNEncoder(**hparams)
+        self.decoder = BasicRNNDecoder(**hparams)
 
     def forward(self, enc_seqs, n_step):
         _, hidden = self.encoder(enc_seqs)
@@ -43,14 +43,14 @@ class BasicSeq2Seq(pl.LightningModule):
         for i in range(n_steps):
             output, hidden = self.decoder(dec_inputs_i, hidden)
             outputs.append(output)
-            if random.random() < self.hp['teacher_forcing_rate']:
+            if random.random() < self.hparams['teacher_forcing_rate']:
                 dec_inputs_i = dec_inputs[:, i].unsqueeze(1)
             else:
                 dec_inputs_i = output
         outputs = torch.cat(outputs, dim=1)
         loss = self.loss_fn(outputs, dec_outputs)
 
-        return {'loss': loss}
+        return {'loss': loss, 'log': {'train_loss': loss}}
 
     def validation_step(self, batch, batch_nb):
         enc_inputs = batch['enc_inputs']
@@ -58,19 +58,27 @@ class BasicSeq2Seq(pl.LightningModule):
         n_step = dec_outputs.shape[1]
         pred_outputs = self(enc_inputs, n_step)
         loss = self.loss_fn(pred_outputs, dec_outputs)
-        return {'valid_loss': loss}
+        return {'val_loss': loss}
+
+    def validation_end(self, outputs):
+        loss_mean = 0
+
+        for output in outputs:
+            loss_mean += output['val_loss']
+        log = {'val_loss': loss_mean / len(outputs)}
+        return {'progress_bar': log, 'log': log}
 
     def configure_optimizers(self):
-        return getattr(optim, self.hp['optimizer'])(self.parameters(), lr=self.hp['lr'])
+        return getattr(optim, self.hparams['optimizer'])(self.parameters(), lr=self.hparams['lr'])
 
     @pl.data_loader
     def train_dataloader(self):
-        return self.hp.get('train_dataloader')
+        return self.hparams.get('train_dataloader')
 
     @pl.data_loader
     def val_dataloader(self):
-        return self.hp.get('valid_dataloader')
+        return self.hparams.get('valid_dataloader')
 
     @pl.data_loader
     def test_dataloader(self):
-        return self.hp.get('test_dataloader')
+        return self.hparams.get('test_dataloader')
