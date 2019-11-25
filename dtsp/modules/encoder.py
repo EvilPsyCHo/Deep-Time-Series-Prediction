@@ -7,10 +7,10 @@
 import torch.nn as nn
 
 
-class BasicRNNEncoder(nn.Module):
+class SimpleRNNEncoder(nn.Module):
 
     def __init__(self, target_size, hidden_size, rnn_type, **kwargs):
-        super(BasicRNNEncoder, self).__init__()
+        super(SimpleRNNEncoder, self).__init__()
         self.rnn = getattr(nn, rnn_type)(target_size, hidden_size, batch_first=True)
 
     def forward(self, x):

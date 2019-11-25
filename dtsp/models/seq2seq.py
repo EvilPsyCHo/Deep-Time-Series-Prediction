@@ -2,6 +2,5 @@
 """
 @author : zhirui zhou
 @contact: evilpsycho42@gmail.com
-@time   : 2019/11/19 14:12
+@time   : 2019/11/25 15:11
 """
-from .basic_seq2seq import SimpleSeq2Seq

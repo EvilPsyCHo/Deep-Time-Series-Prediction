@@ -6,6 +6,7 @@ SOTA DeepLearning Models for Time Series Prediction and implemented by Keras and
 - [x] Seq2Seq
 - [x] Wavenet
 - [ ] GANs
+Deep Learning for Time Series Forecasting: The Electric Load Case
 
 ## Quick Start
 

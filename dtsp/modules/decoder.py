@@ -8,10 +8,10 @@ import torch.nn as nn
 from . attention import GeneralAttention
 
 
-class BasicRNNDecoder(nn.Module):
+class SimpleRNNDecoder(nn.Module):
     def __init__(self, target_size, hidden_size, rnn_type,
                  dropout=0.2, activation='Tanh', **kwargs):
-        super(BasicRNNDecoder, self).__init__()
+        super(SimpleRNNDecoder, self).__init__()
         self.rnn = getattr(nn, rnn_type)(target_size, hidden_size, batch_first=True)
         self.dense = nn.Sequential(
             nn.Linear(hidden_size, hidden_size * 2),
