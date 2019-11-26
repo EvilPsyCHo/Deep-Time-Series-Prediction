@@ -30,7 +30,7 @@ class SimpleWaveNet(BaseModel):
 
     def forward(self, x):
         skips = torch.zeros(x.shape[0], self.hp['residual_channels'], x.shape[2])
-
+        
         for layer in self.conv_blocks:
             x, skip = layer(x)
             skips += skip
