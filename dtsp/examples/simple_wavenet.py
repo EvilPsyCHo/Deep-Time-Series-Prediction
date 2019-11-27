@@ -4,9 +4,9 @@
 @contact: evilpsycho42@gmail.com
 @time   : 2019/11/19 16:00
 """
-from dtsp.dataset import example_simple_seq2seq_arima
-from dtsp.param import SIMPLE_SEQ2SEQ_HP
-from dtsp.models import SimpleSeq2Seq
+from dtsp.dataset import example_simple_wavenet_arima
+from dtsp.param import SIMPLE_WAVENET_HP
+from dtsp.models import SimpleWaveNet
 from torch.utils.data import DataLoader
 import numpy as np
 import torch
@@ -20,21 +20,21 @@ dec_lens = 40
 batch_size = 32
 n_test = 100
 
-hp = SIMPLE_SEQ2SEQ_HP
+hp = SIMPLE_WAVENET_HP
 hp['path'] = r'C:\Users\evilp\project\Deep-Time-Series-Prediction\dtsp\examples\logs'
+hp['dilation'] = [1, 2, 4, 8, 16]
 
 
-train, valid = example_simple_seq2seq_arima(seqs_lens, enc_lens, dec_lens, n_test)
+train, valid = example_simple_wavenet_arima(seqs_lens, enc_lens, dec_lens, n_test)
 plt.plot(train.dataset.seqs)
 train_dataloader = DataLoader(train, batch_size, shuffle=True)
 valid_dataloader = DataLoader(valid, batch_size, shuffle=False)
 
 
+model = SimpleWaveNet(hp)
 
-model = SimpleSeq2Seq(hp)
-
-model.fit(10, train_dataloader, valid_dataloader)
-path = r"C:\Users\evilp\project\Deep-Time-Series-Prediction\dtsp\examples\test1.pkl"
+model.fit(10, train_dataloader, valid_dataloader, early_stopping=2)
+path = r"C:\Users\evilp\project\Deep-Time-Series-Prediction\dtsp\examples\logs\test1.pkl"
 model.save(path)
-model = SimpleSeq2Seq.load(path)
-os.remove(path)
+model = SimpleWaveNet.load(path)
+# os.remove(path)

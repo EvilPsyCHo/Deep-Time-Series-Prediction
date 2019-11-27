@@ -10,7 +10,8 @@ import torch.nn as nn
 
 
 class GeneralAttention(nn.Module):
-
+    # https://zhuanlan.zhihu.com/p/40920384
+    # BahdanauAttention与LuongAttention注意力机制简介
     def __init__(self, size, bias=True):
         super(GeneralAttention, self).__init__()
         self.Wq = nn.Linear(size, size, bias=bias)
@@ -35,4 +36,4 @@ class GeneralAttention(nn.Module):
         energy = torch.bmm(q, k) / self.scale_factor  # (B, 1, S)
         weight = torch.softmax(energy, dim=-1)  # (B, 1, S)
         attn_value = torch.bmm(weight, k)  # (B, 1, H)
-        return weight, attn_value
+        return attn_value, weight

@@ -82,10 +82,6 @@ if __name__ == "__main__":
 
     x_in = x
     for layer in layers:
-        for _, m in layer._modules.items():
-            init.constant_(m.weight, 0.01)
-            init.constant_(m.bias, 0)
-
         x_in, skip = layer(x_in)
         skips += skip
         print(x_in.shape, skips.shape)

@@ -2,3 +2,4 @@ numpy
 keras
 matplotlib
 torch
+tqdm

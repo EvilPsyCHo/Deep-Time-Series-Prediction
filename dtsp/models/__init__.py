@@ -4,4 +4,5 @@
 @contact: evilpsycho42@gmail.com
 @time   : 2019/11/19 14:12
 """
-from .basic_seq2seq import SimpleSeq2Seq
+from .simple_seq2seq import SimpleSeq2Seq
+from .simple_wavenet import SimpleWaveNet

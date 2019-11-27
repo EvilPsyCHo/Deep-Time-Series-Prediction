@@ -9,7 +9,6 @@ import logging
 
 def get_logger(name):
     logger = logging.Logger(name, level=logging.INFO)
-
     string = logging.StreamHandler()
     logger.addHandler(string)
     return logger

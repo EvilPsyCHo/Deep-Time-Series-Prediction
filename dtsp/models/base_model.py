@@ -6,22 +6,89 @@
 """
 import torch.nn as nn
 import torch
+from tqdm import tqdm
+import numpy as np
 import os
+from dtsp.record import Record
 
 
 class BaseModel(nn.Module):
 
-    def train_op(self, args, **kwargs):
-        raise NotImplemented
+    def __init__(self):
+        super(BaseModel, self).__init__()
+        self.record = Record()
 
     def predict(self, args, **kwargs):
         raise NotImplemented
 
+    def train_batch(self, args, **kwargs):
+        raise NotImplemented
+
+    def evaluate_batch(self, arg, **kwargs):
+        raise NotImplemented
+
+    def train_cycle(self, trn_ld):
+        self.train()
+        trn_loss = []
+        with tqdm(trn_ld) as bar:
+            for i, batch in enumerate(bar):
+                _loss = self.train_batch(**batch)
+                trn_loss.append(_loss)
+                bar.set_description_str(desc=f'batch {i+1} / {len(trn_ld)}, loss {_loss:.3f}', refresh=True)
+        trn_loss = np.mean(trn_loss)
+        return trn_loss
+
+    def evaluate_cycle(self, val_ld):
+        self.eval()
+        val_loss = []
+        with torch.no_grad():
+            for batch in val_ld:
+                _loss = self.evaluate_batch(**batch)
+                val_loss.append(_loss)
+        val_loss = np.mean(val_loss)
+        return val_loss
+
+    def fit(self, n_epochs, trn_ld, val_ld, early_stopping=5, save_every_n_epochs=None, save_best_model=True):
+        self.check_path()
+        total_epochs = self.record.epochs + n_epochs
+        init_epochs = self.record.epochs + 1
+        for epoch in range(n_epochs):
+            trn_loss = self.train_cycle(trn_ld)
+            val_loss = self.evaluate_cycle(val_ld)
+            print(f'epoch {epoch+init_epochs} / {total_epochs}, loss {trn_loss:.3f}, val loss {val_loss:.3f}')
+            if hasattr(self, "lr_scheduler"):
+                self.lr_scheduler.step()
+            self.record.update(trn_loss, val_loss)
+
+            try:
+                save_every = (epoch - 1) % save_every_n_epochs == 0
+            except:
+                save_every = False
+
+            save_best = (self.record.best_model_epoch == self.record.epochs) and save_best_model
+
+            if save_every or save_best:
+                model_name = f'{self.__class__.__name__}_epoch_{self.record.epochs}'
+                model_info = f'{self.record.best_model_loss:.3f}'
+                self.save(f'{model_name}_{model_info}.pkl')
+
+            if isinstance(early_stopping, int):
+                if self.record.use_early_stop(early_stopping):
+                    print(f'early_stopping ! current epochs: {self.record.epochs}, best epochs: {self.record.best_model_epoch}')
+                    break
+
+    def check_path(self):
+        if not os.path.exists(self.hp['path']):
+            os.mkdir(self.hp['path'])
+            print(f'create model path: {self.hp["path"]}')
+
     def save(self, name):
+        self.check_path()
         checkpoint = {
             'model': self.state_dict(),
             'optimizer': self.optimizer.state_dict(),
             'hp': self.hp,
+            'record': self.record,
         }
 
         if hasattr(self, "lr_scheduler"):
@@ -34,6 +101,7 @@ class BaseModel(nn.Module):
         model = cls(checkpoint['hp'])
         model.load_state_dict(checkpoint['model'])
         model.optimizer.load_state_dict(checkpoint['optimizer'])
+        model.record = checkpoint['record']
         if hasattr(model, "lr_scheduler"):
             model.lr_scheduler.load_state_dict(checkpoint['lr_scheduler'])
         return model
