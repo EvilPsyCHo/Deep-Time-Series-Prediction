@@ -100,23 +100,6 @@ class BaseModel(nn.Module):
         torch.save(checkpoint, save_path)
         return save_path
 
-    def reload(self, path):
-        checkpoint = torch.load(path)
-        self.load_state_dict(checkpoint['model'])
-        self.optimizer.load_state_dict(checkpoint['optimizer'])
-        self.record = checkpoint['record']
-        if hasattr(self, "lr_scheduler"):
-            self.lr_scheduler.load_state_dict(checkpoint['lr_scheduler'])
-
-    def best_model_path(self):
-        if self.record.best_model_epoch is None:
-            return None
-
-        model_name = f'{self.__class__.__name__}_epoch_{self.record.best_model_epoch}'
-        model_info = f'{self.record.best_model_loss:.3f}'
-        path = os.path.join(self.hp["path"], f'{model_name}_{model_info}.pkl')
-        return path
-
     @classmethod
     def load(cls, path):
         checkpoint = torch.load(path)

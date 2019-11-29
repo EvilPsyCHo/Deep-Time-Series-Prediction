@@ -5,7 +5,7 @@
 @time   : 2019/11/27 15:35
 """
 from .base_model import BaseModel
-from dtsp.modules import RNNDecoder, RNNEncoder, RNNTransformer
+from dtsp.modules import AttentionDecoder, RNNEncoder, RNNTransformer
 import torch.nn as nn
 from torch import optim
 from torch.optim import lr_scheduler
@@ -24,10 +24,10 @@ class Seq2Seq(BaseModel):
             self.hp['input_size'] = self.hp['target_size'] + self.trans.transform_size()
         else:
             self.trans = None
-            self.hp['input_size'] = self.hp['target_size']
+            self.hp['input_size'] = self.hp['target_size'] + self.trans.transform_size()
 
         self.enc = RNNEncoder(**self.hp)
-        self.dec = RNNDecoder(**self.hp)
+        self.dec = AttentionDecoder(**self.hp)
 
         self.loss_fn = getattr(nn, hp['loss_fn'])()
         self.optimizer = getattr(optim, hp['optimizer'])(self.parameters(), lr=hp['learning_rate'])
@@ -36,7 +36,6 @@ class Seq2Seq(BaseModel):
                                                                               **hp.get('lr_scheduler_kw'))
 
     def train_batch(self, enc_inputs, dec_inputs, dec_outputs, continuous_x=None, category_x=None):
-        self.optimizer.zero_grad()
         enc_lens = enc_inputs.shape[1]
         dec_lens = dec_outputs.shape[1]
 
@@ -57,14 +56,11 @@ class Seq2Seq(BaseModel):
 
     def evaluate_batch(self, enc_inputs, dec_inputs, dec_outputs, continuous_x=None, category_x=None):
         dec_lens = dec_outputs.shape[1]
-        preds = self.predict(enc_inputs, dec_lens, continuous_x, category_x)
+        preds, attns = self.predict(enc_inputs, dec_lens, continuous_x, category_x)
         loss = self.loss_fn(preds, dec_outputs)
         return loss.item()
 
-    def predict(self, enc_inputs, dec_lens, continuous_x=None, category_x=None, return_attns=False):
-        if not self.hp['use_attn']:
-            return_attns = False
-
+    def predict(self, enc_inputs, dec_lens, continuous_x=None, category_x=None, return_attns=True):
         enc_lens = enc_inputs.shape[1]
         if self.trans is not None:
             trans_x = self.trans(continuous_x, category_x)
@@ -73,7 +69,6 @@ class Seq2Seq(BaseModel):
         else:
             dec_input_i = enc_inputs[:, -1, :].unsqueeze(1)
         enc_outputs, hidden = self.enc(enc_inputs)
-
         preds = []
         attns = []
 
@@ -81,14 +76,16 @@ class Seq2Seq(BaseModel):
             pred_i, hidden, attn_i = self.dec(dec_input_i, enc_outputs, hidden)
             preds.append(pred_i)
             attns.append(attn_i)
+            if i == dec_lens-1:
+                break
             if self.trans is not None:
-                dec_input_i = torch.cat([pred_i, trans_x[:, enc_lens+i, :].unsqueeze(1)], dim=2)
+                dec_input_i = torch.cat([pred_i, trans_x[:, enc_lens+i+1, :].unsqueeze(1)], dim=2)
             else:
                 dec_input_i = pred_i
         preds = torch.cat(preds, dim=1)
+        attns = torch.cat(attns, dim=1)
 
         if return_attns:
-            attns = torch.cat(attns, dim=1)
             return preds, attns
         else:
             return preds

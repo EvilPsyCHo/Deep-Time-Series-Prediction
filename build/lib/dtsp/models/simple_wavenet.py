@@ -76,7 +76,6 @@ class SimpleWaveNet(BaseModel):
 
     def train_batch(self, enc_inputs, dec_outputs):
         # TODO: only teacher forcing learning , add self learning
-        self.optimizer.zero_grad()
         dec_lens = dec_outputs.shape[-1]
         x = torch.cat([enc_inputs, dec_outputs[:, :, :-1]], dim=2)
         y_pred = self(x)[:, :, -dec_lens:]

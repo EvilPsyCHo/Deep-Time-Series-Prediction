@@ -49,18 +49,9 @@ def example_simple_wavenet_arima(seqs_lens, enc_lens, dec_lens, n_test):
     return train, valid
 
 
-def example_data():
-    data_path = Path(__file__).resolve().parent / "data.csv"
-    data = pd.read_csv(str(data_path), parse_dates=['date_time'], index_col="date_time")
-    series = data.values
-    month = data.index.month.values
-    return {'series': series, 'categorical_var': month}
-
-
 def example_1(enc_lens, dec_lens, n_test, model_type='seq2seq'):
     data_path = Path(__file__).resolve().parent / "data.csv"
     data = pd.read_csv(str(data_path), parse_dates=['date_time'], index_col="date_time")
-
     series = data.values
     mu = series[:-(n_test + dec_lens - 1)].mean(axis=0)
     std = series[:-(n_test + dec_lens - 1)].std(axis=0)

@@ -10,7 +10,7 @@ from torch.optim import lr_scheduler
 import torch
 import random
 from .base_model import BaseModel
-from dtsp.modules import SimpleRNNEncoder, SimpleRNNDecoder
+from dtsp.modules import SimpleRNNDecoder, SimpleRNNEncoder
 
 
 class SimpleSeq2Seq(BaseModel):
@@ -38,6 +38,7 @@ class SimpleSeq2Seq(BaseModel):
 
     def train_batch(self, enc_inputs, dec_inputs, dec_outputs):
         self.optimizer.zero_grad()
+
         _, hidden = self.encoder(enc_inputs)
         use_teacher_forcing = random.random() < self.hp['teacher_forcing_rate']
 
