@@ -17,7 +17,7 @@ def test_seq2seq():
         'target_size': 20,
         'rnn_type': 'LSTM',
         'dropout': 0.1,
-        'hidden_size': 36,
+        'hidden_size': 128,
         'teacher_forcing_rate': 0.5,
         'use_attn': True,
         'trans_hidden_size': 4,
@@ -30,11 +30,12 @@ def test_seq2seq():
         'learning_rate': 0.001,
         'lr_scheduler': 'CosineAnnealingWarmRestarts',
         'lr_scheduler_kw': {'T_0': 5, 'T_mult': 10},
+        'metric': 'RMSE'
     }
 
     n_test = 12
     n_val = 12
-    enc_lens = 36
+    enc_lens = 72
     dec_lens = 12
     batch_size = 8
     epochs = 50
@@ -62,7 +63,7 @@ def test_seq2seq():
     model.fit(epochs, trn_ld, val_ld, early_stopping=10, save_every_n_epochs=None, save_best_model=True)
     model.reload(model.best_model_path())
     print(' - ' * 20)
-    print(f'train loss: {model.evaluate_cycle(trn_ld):.3f}, valid loss: {model.evaluate_cycle(val_ld):.3f}, test loss :{model.evaluate_cycle(test_ld):.3f}')
+    print(f'train loss: {model.evaluate_cycle(trn_ld)[0]:.3f}, valid loss: {model.evaluate_cycle(val_ld)[0]:.3f}, test loss :{model.evaluate_cycle(test_ld)[0]:.3f}')
     shutil.rmtree(hp['path'])
 
 
@@ -73,7 +74,7 @@ def test_seq2seq_without_trans():
         'rnn_type': 'LSTM',
         'use_attn': False,
         'dropout': 0.2,
-        'hidden_size': 36,
+        'hidden_size': 128,
         'teacher_forcing_rate': 0.5,
         'trans_hidden_size': None,
         'trans_continuous_var': None,

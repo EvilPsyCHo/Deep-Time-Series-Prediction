@@ -8,8 +8,9 @@ import torch.nn as nn
 import torch
 from torch import optim
 from torch.optim import lr_scheduler
-from .base_model import BaseModel
+from .base import BaseModel
 from dtsp.modules import DilationBlockV1
+from dtsp import metrics
 
 
 class SimpleWaveNet(BaseModel):
@@ -41,6 +42,7 @@ class SimpleWaveNet(BaseModel):
         if hp['lr_scheduler'] is not None:
             self.lr_scheduler = getattr(lr_scheduler, hp.get('lr_scheduler'))(self.optimizer,
                                                                               **hp.get('lr_scheduler_kw'))
+        self.metric = getattr(metrics, hp['metric'])()
 
     def forward(self, x):
         skips = torch.zeros(x.shape[0], self.hp['residual_channels'], x.shape[2])
@@ -89,4 +91,5 @@ class SimpleWaveNet(BaseModel):
         n_steps = dec_outputs.shape[-1]
         y_pred = self.predict(enc_inputs, n_steps)
         loss = self.loss_fn(y_pred, dec_outputs)
-        return loss.item()
+        score = self.metric(y_pred, dec_outputs)
+        return loss.item(), score

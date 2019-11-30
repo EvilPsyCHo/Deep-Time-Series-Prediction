@@ -9,8 +9,9 @@ from torch import optim
 from torch.optim import lr_scheduler
 import torch
 import random
-from .base_model import BaseModel
+from .base import BaseModel
 from dtsp.modules import SimpleRNNEncoder, SimpleRNNDecoder
+from dtsp import metrics
 
 
 class SimpleSeq2Seq(BaseModel):
@@ -35,6 +36,7 @@ class SimpleSeq2Seq(BaseModel):
         self.optimizer = getattr(optim, hp['optimizer'])(self.parameters(), lr=hp['learning_rate'])
         if hp['lr_scheduler'] is not None:
             self.lr_scheduler = getattr(lr_scheduler, hp.get('lr_scheduler'))(self.optimizer, **hp.get('lr_scheduler_kw'))
+        self.metric = getattr(metrics, hp['metric'])()
 
     def train_batch(self, enc_inputs, dec_inputs, dec_outputs):
         self.optimizer.zero_grad()
@@ -62,7 +64,8 @@ class SimpleSeq2Seq(BaseModel):
         dec_outputs = batch['dec_outputs']
         y_pred = self.predict(enc_inputs, dec_outputs.shape[1])
         loss = self.loss_fn(y_pred, dec_outputs)
-        return loss.item()
+        score = self.metric(y_pred, dec_outputs)
+        return loss.item(), score
 
     def predict(self, enc_seqs, n_step):
         _, hidden = self.encoder(enc_seqs)

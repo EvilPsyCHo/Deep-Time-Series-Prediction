@@ -1,8 +1,8 @@
-# encoding: utf-8
+# coding: utf-8
 """
-@author : zhirui zhou
-@contact: evilpsycho42@gmail.com
-@time   : 2019/11/25 15:03
+@Author: zhirui zhou
+@Contact: evilpsycho42@gmail.com
+@Time: 2019/11/30 下午3:13
 """
 import torch.nn as nn
 import torch
@@ -42,28 +42,24 @@ class BaseModel(nn.Module):
 
     def evaluate_cycle(self, val_ld):
         self.eval()
-        val_loss = []
+        val_loss = val_score = 0
         with torch.no_grad():
             for batch in val_ld:
-                _loss = self.evaluate_batch(**batch)
-                val_loss.append(_loss)
-        val_loss = np.mean(val_loss)
-        return val_loss
+                batch_loss, batch_score = self.evaluate_batch(**batch)
+                val_loss += batch_loss / len(val_ld)
+                val_score += batch_score / len(val_ld)
+        return val_loss, val_score
 
-    def fit(self, n_epochs, trn_ld, val_ld, early_stopping=5, save_every_n_epochs=None, save_best_model=True):
+    def fit(self, n_epochs, trn_ld, val_ld, early_stopping=5, save_every_n_epochs=1, save_best_model=True):
         total_epochs = self.record.epochs + n_epochs
         init_epochs = self.record.epochs + 1
         best_model_path = None
         for epoch in range(n_epochs):
             trn_loss = self.train_cycle(trn_ld)
-            val_loss = self.evaluate_cycle(val_ld)
-            print(f'epoch {epoch+init_epochs} / {total_epochs}, loss {trn_loss:.3f}, val loss {val_loss:.3f}')
+            val_loss, val_score = self.evaluate_cycle(val_ld)
+            print(f'epoch {epoch+init_epochs} / {total_epochs}: loss {trn_loss:.3f} val loss {val_loss:.3f} {self.metric.name} {val_score:.3f}')
             self.record.update(trn_loss, val_loss, self.optimizer.param_groups[0]['lr'])
-            try:
-                save_every = (epoch - 1) % save_every_n_epochs == 0
-            except:
-                save_every = False
-
+            save_every = (epoch - 1) % save_every_n_epochs == 0 if isinstance(save_every_n_epochs, int) else False
             save_best = (self.record.best_model_epoch == self.record.epochs) and save_best_model
 
             if save_every or save_best:

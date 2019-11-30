@@ -4,8 +4,9 @@
 @contact: evilpsycho42@gmail.com
 @time   : 2019/11/27 15:35
 """
-from .base_model import BaseModel
+from .base import BaseModel
 from dtsp.modules import RNNDecoder, RNNEncoder, RNNTransformer
+from dtsp import metrics
 import torch.nn as nn
 from torch import optim
 from torch.optim import lr_scheduler
@@ -34,6 +35,7 @@ class Seq2Seq(BaseModel):
         if hp['lr_scheduler'] is not None:
             self.lr_scheduler = getattr(lr_scheduler, hp.get('lr_scheduler'))(self.optimizer,
                                                                               **hp.get('lr_scheduler_kw'))
+        self.metric = getattr(metrics, hp['metric'])()
 
     def train_batch(self, enc_inputs, dec_inputs, dec_outputs, continuous_x=None, category_x=None):
         self.optimizer.zero_grad()
@@ -59,7 +61,8 @@ class Seq2Seq(BaseModel):
         dec_lens = dec_outputs.shape[1]
         preds = self.predict(enc_inputs, dec_lens, continuous_x, category_x)
         loss = self.loss_fn(preds, dec_outputs)
-        return loss.item()
+        score = self.metric(preds, dec_outputs)
+        return loss, score
 
     def predict(self, enc_inputs, dec_lens, continuous_x=None, category_x=None, return_attns=False):
         if not self.hp['use_attn']:

@@ -11,7 +11,7 @@ from pathlib import Path
 import shutil
 
 
-def test_seq2seq():
+def test_simple_seq2seq():
     hp = {
         'path': Path('.').resolve() / 'logs',
         'target_size': 20,
@@ -24,6 +24,7 @@ def test_seq2seq():
         'learning_rate': 0.001,
         'lr_scheduler': 'CosineAnnealingWarmRestarts',
         'lr_scheduler_kw': {'T_0': 5, 'T_mult': 10},
+        'metric': 'RMSE'
     }
 
     n_test = 12
@@ -55,5 +56,5 @@ def test_seq2seq():
     model.fit(epochs, trn_ld, val_ld, early_stopping=10, save_every_n_epochs=None, save_best_model=True)
     model.reload(model.best_model_path())
     print(' - ' * 20)
-    print(f'train loss: {model.evaluate_cycle(trn_ld):.3f}, valid loss: {model.evaluate_cycle(val_ld):.3f}, test loss :{model.evaluate_cycle(test_ld):.3f}')
+    print(f'train loss: {model.evaluate_cycle(trn_ld)[0]:.3f}, valid loss: {model.evaluate_cycle(val_ld)[0]:.3f}, test loss :{model.evaluate_cycle(test_ld)[0]:.3f}')
     shutil.rmtree(hp['path'])

@@ -11,19 +11,20 @@ from pathlib import Path
 import shutil
 
 
-def test_seq2seq():
+def test_wavenet():
     hp = {
         'path': Path('.').resolve() / 'logs',
         'target_size': 20,
-        'dilation': [1, 2, 4, 8, 16],
+        'dilation': [1, 2, 4, 8, 16, 32],
         'dropout': 0.2,
-        'residual_channels': 20,
+        'residual_channels': 36,
         'teacher_forcing_rate': 0.5,
         'loss_fn': 'MSELoss',
         'optimizer': 'Adam',
         'learning_rate': 0.001,
         'lr_scheduler': 'CosineAnnealingWarmRestarts',
         'lr_scheduler_kw': {'T_0': 5, 'T_mult': 10},
+        'metric': 'RMSE',
     }
 
     n_test = 12

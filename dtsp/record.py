@@ -16,9 +16,16 @@ class Record(object):
         self.epochs = 0
         self.best_model_epoch = None
         self.best_model_loss = np.inf
-        self.epsilon = 0.001
+        self.epsilon = 0.0005
 
     def update(self, trn_loss, val_loss, lr):
+        """Update Per Epoch
+
+        :param trn_loss:
+        :param val_loss:
+        :param lr:
+        :return:
+        """
         self.trn_loss.append(trn_loss)
         self.val_loss.append(val_loss)
         self.lr.append(lr)
