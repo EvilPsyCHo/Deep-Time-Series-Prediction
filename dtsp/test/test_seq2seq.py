@@ -26,7 +26,7 @@ def test_seq2seq():
         'trans_category_var': [(13, 2)],
         'trans_bidirectional': True,
         'trans_rnn_type': 'LSTM',
-        'use_move_scale': True,
+        'use_move_scale': False,
     }
 
     compile_params = {
@@ -48,9 +48,9 @@ def test_seq2seq():
     series = data['series']
     categorical = data['categorical_var']
 
-    # mu = series[:-(n_test+n_val)].mean(axis=0)
-    # std = series[:-(n_test + n_val)].std(axis=0)
-    # series = (series - mu) / std
+    mu = series[:-(n_test+n_val)].mean(axis=0)
+    std = series[:-(n_test + n_val)].std(axis=0)
+    series = (series - mu) / std
 
     dataset = Seq2SeqDataSet(series, enc_lens, dec_lens, categorical_var=categorical)
     idxes = list(range(len(dataset)))

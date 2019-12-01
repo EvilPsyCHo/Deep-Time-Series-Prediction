@@ -6,6 +6,17 @@
 """
 from torch.optim.lr_scheduler import StepLR, CosineAnnealingLR, CosineAnnealingWarmRestarts
 # support iteration based lr
+WaveNet_HP ={
+    'path': None,
+    'target_size': 20,
+    'dilation': [1, 2, 4, 8, 16, 32, 64],
+    'dropout': 0.2,
+    'residual_channels': 36,
+    'teacher_forcing_rate': 0.5,
+    'use_move_scale': True,
+}
+
+
 SIMPLE_WAVENET_HP = {
     'path': None,
     'target_size': 1,

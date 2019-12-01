@@ -6,6 +6,6 @@
 """
 from .decoder import SimpleRNNDecoder, RNNDecoder
 from .encoder import SimpleRNNEncoder, RNNEncoder
-from .causal_conv import DilationBlockV1
+from .causal_conv import DilationBlockV1, ConditionDilationBlock
 from .embeddings import Embeddings
 from .transformer import RNNTransformer

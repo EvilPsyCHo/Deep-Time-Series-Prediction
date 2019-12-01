@@ -1,12 +1,13 @@
 # Deep-Time-Series-Prediction
-SOTA DeepLearning Models for Time Series Prediction and implemented by Keras and Pytorch.
+SOTA DeepLearning Models for Time Series Prediction and implemented by PyTorch. **Easy** For using and modified.
 
 ## Models
 
-- [x] Seq2Seq
-- [x] Wavenet
-- [ ] GANs
-Deep Learning for Time Series Forecasting: The Electric Load Case
+- [x] Simple Seq2Seq, without Attention, Condtion Variables;
+- [x] Seq2Seq, Multi-Head-Attention, Condtion Model;
+- [x] Simple WaveNet, without Condtion Variables;
+- [ ] Condition WaveNet
+- [ ] Wave2Wave with Condition
 
 ## Quick Start
 

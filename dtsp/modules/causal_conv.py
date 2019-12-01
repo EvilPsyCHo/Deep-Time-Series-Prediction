@@ -63,3 +63,26 @@ class DilationBlockV1(nn.Module):
 
 
 # TODO condition wavenet
+# TODO share condition Wcg Wcf weights?
+class ConditionDilationBlock(nn.Module):
+
+    def __init__(self, input_channels, residual_channels, condition_channels, kernel_size, dilation):
+        super().__init__()
+        self.conv_in = nn.Conv1d(input_channels, residual_channels, kernel_size=1)
+        self.conv_x_f = CausalConv1d(residual_channels, residual_channels, kernel_size, dilation=dilation)
+        self.conv_x_g = CausalConv1d(residual_channels, residual_channels, kernel_size, dilation=dilation)
+        self.conv_c_f = CausalConv1d(condition_channels, residual_channels, kernel_size, dilation=dilation)
+        self.conv_c_g = CausalConv1d(condition_channels, residual_channels, kernel_size, dilation=dilation)
+
+    def forward(self, x, c):
+        x = self.conv_in(x)
+        x = torch.relu(x)
+
+        left = torch.tanh(self.conv_x_f(x) + self.conv_x_g(c))
+        right = torch.sigmoid(self.conv_c_g(x) + self.conv_c_g(c))
+        skip = torch.mul(left, right)
+        skip = self.conv_out(skip)
+        # add residual connection
+        x = x + skip
+
+        return x, skip

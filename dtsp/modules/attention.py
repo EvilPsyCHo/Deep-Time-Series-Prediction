@@ -78,7 +78,7 @@ class Attention(nn.Module):
 
 
 class MultiHeadAttention(nn.Module):
-
+    # TODO: Transformer multi-head-attention
     def __init__(self, n_head, size, bias=True, attn_type='general', use_scale=True, **kwargs):
         super().__init__()
         self.n_head = n_head

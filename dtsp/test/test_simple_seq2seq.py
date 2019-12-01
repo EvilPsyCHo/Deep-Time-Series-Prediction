@@ -20,7 +20,7 @@ def test_simple_seq2seq():
         'hidden_size': 72,
         'teacher_forcing_rate': 0.5,
         'learning_rate': 0.001,
-        'use_move_scale': True,
+        'use_move_scale': False,
     }
 
     compile_params = {
@@ -40,9 +40,9 @@ def test_simple_seq2seq():
     data = example_data()
     series = data['series']
 
-    # mu = series[:-(n_test+n_val)].mean(axis=0)
-    # std = series[:-(n_test + n_val)].std(axis=0)
-    # series = (series - mu) / std
+    mu = series[:-(n_test+n_val)].mean(axis=0)
+    std = series[:-(n_test + n_val)].std(axis=0)
+    series = (series - mu) / std
 
     dataset = SimpleSeq2SeqDataSet(series, enc_lens, dec_lens)
     idxes = list(range(len(dataset)))

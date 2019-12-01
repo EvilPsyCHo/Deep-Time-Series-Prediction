@@ -18,7 +18,13 @@ class MoveScale:
         self.std = x.std(self.dim).unsqueeze(self.dim)
 
     def transform(self, *tensors):
-        return [(t - self.mu.expand_as(t)) / self.std.expand_as(t) for t in tensors]
+        if isinstance(tensors, list):
+            return [(t - self.mu.expand_as(t)) / self.std.expand_as(t) for t in tensors]
+        else:
+            return (tensors - self.mu.expand_as(tensors)) / self.std.expand_as(tensors)
 
     def inverse(self, *tensors):
-        return [t * self.std.expand_as(t) + self.mu.expand_as(t) for t in tensors]
+        if isinstance(tensors, list):
+            return [t * self.std.expand_as(t) + self.mu.expand_as(t) for t in tensors]
+        else:
+            return tensors * self.std.expand_as(tensors) + self.mu.expand_as(tensors)

@@ -20,7 +20,7 @@ def test_simple_wavenet():
         'dropout': 0.2,
         'residual_channels': 36,
         'teacher_forcing_rate': 0.5,
-        'use_move_scale': True,
+        'use_move_scale': False,
     }
 
     compile_params = {
