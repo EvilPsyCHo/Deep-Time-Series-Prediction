@@ -89,7 +89,7 @@ class MultiHeadAttention(nn.Module):
         for layer in self.heads:
             v, w = layer(q, k)
             attn_values.append(v)
-            attn_weights.append(v.unsqueeze(2))
+            attn_weights.append(w.unsqueeze(2))
         attn_values = torch.cat(attn_values, dim=2)  # (B, S, n_head x H)
         attn_weights = torch.cat(attn_weights, dim=2)  # (B, S n_head, H)
         return attn_values, attn_weights
