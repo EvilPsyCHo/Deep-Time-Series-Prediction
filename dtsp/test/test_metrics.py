@@ -19,6 +19,3 @@ def test_rmse():
     sample_weight = np.random.rand(4)
     metric = RMSE()
     assert metric(y_true, y_pred, sample_weight) == 0
-
-
-print(test_rmse())

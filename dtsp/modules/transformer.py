@@ -43,16 +43,3 @@ class RNNTransformer(nn.Module):
 
     def transform_size(self):
         return (int(self.bidirectional) + 1) * self.transformer_hidden_size
-
-
-if __name__ == "__main__":
-    category = torch.randint(0, 5, (4, 12, 2))
-    continuous = torch.rand((4, 12, 3))
-
-    category_info = [(5, 2), (5, 3)]
-    continuous_info = 3
-
-    model = RNNTransformer(128, continuous_info, category_info)
-    y = model(continuous, category)
-    print(y.shape)
-    print(model.transform_size())

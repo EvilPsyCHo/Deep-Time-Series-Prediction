@@ -4,6 +4,7 @@
 @contact: evilpsycho42@gmail.com
 @time   : 2019/11/29 11:38
 """
+import pytest
 from dtsp.dataset import example_data, SimpleWaveNetDataSet, walk_forward_split
 from dtsp.models import SimpleWaveNet
 from torch.utils.data import Subset, DataLoader
@@ -11,25 +12,29 @@ from pathlib import Path
 import shutil
 
 
-def test_wavenet():
+def test_simple_wavenet():
     hp = {
         'path': Path('.').resolve() / 'logs',
         'target_size': 20,
-        'dilation': [1, 2, 4, 8, 16, 32],
+        'dilation': [1, 2, 4, 8, 16, 32, 64],
         'dropout': 0.2,
         'residual_channels': 36,
         'teacher_forcing_rate': 0.5,
-        'loss_fn': 'MSELoss',
+        'use_move_scale': True,
+    }
+
+    compile_params = {
         'optimizer': 'Adam',
-        'learning_rate': 0.001,
+        'lr': 0.001,
         'lr_scheduler': 'CosineAnnealingWarmRestarts',
         'lr_scheduler_kw': {'T_0': 5, 'T_mult': 10},
         'metric': 'RMSE',
+        'loss_fn': 'MSELoss',
     }
 
     n_test = 12
     n_val = 12
-    enc_lens = 36
+    enc_lens = 72
     dec_lens = 12
     batch_size = 8
     epochs = 50
@@ -53,8 +58,12 @@ def test_wavenet():
     test_ld = DataLoader(test_set, batch_size=batch_size, shuffle=False)
 
     model = SimpleWaveNet(hp)
+    model.compile(**compile_params)
     model.fit(epochs, trn_ld, val_ld, early_stopping=10, save_every_n_epochs=None, save_best_model=True)
     model.reload(model.best_model_path())
     print(' - ' * 20)
-    print(f'train loss: {model.evaluate_cycle(trn_ld):.3f}, valid loss: {model.evaluate_cycle(val_ld):.3f}, test loss :{model.evaluate_cycle(test_ld):.3f}')
+    print(f'train loss: {model.eval_cycle(trn_ld)[0]:.3f} '
+          f'valid loss: {model.eval_cycle(val_ld)[0]:.3f} '
+          f'test loss :{model.eval_cycle(test_ld)[0]:.3f} '
+          f'test RMSE :{model.eval_cycle(test_ld)[1]:.3f}, ')
     shutil.rmtree(hp['path'])

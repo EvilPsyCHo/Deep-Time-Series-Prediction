@@ -1,4 +1,5 @@
 numpy
 matplotlib
-torch
+torch==1.3
 tqdm
+pytest

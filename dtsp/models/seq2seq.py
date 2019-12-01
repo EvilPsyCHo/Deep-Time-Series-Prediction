@@ -4,17 +4,14 @@
 @contact: evilpsycho42@gmail.com
 @time   : 2019/11/27 15:35
 """
-from .base import BaseModel
+from .base_model import BaseModel
 from dtsp.modules import RNNDecoder, RNNEncoder, RNNTransformer
-from dtsp import metrics
-import torch.nn as nn
-from torch import optim
-from torch.optim import lr_scheduler
+from .move_scale import MoveScale
 import torch
 import random
 
 
-class Seq2Seq(BaseModel):
+class Seq2Seq(torch.nn.Module, BaseModel):
 
     def __init__(self, hp):
         super(Seq2Seq, self).__init__()
@@ -30,15 +27,13 @@ class Seq2Seq(BaseModel):
         self.enc = RNNEncoder(**self.hp)
         self.dec = RNNDecoder(**self.hp)
 
-        self.loss_fn = getattr(nn, hp['loss_fn'])()
-        self.optimizer = getattr(optim, hp['optimizer'])(self.parameters(), lr=hp['learning_rate'])
-        if hp['lr_scheduler'] is not None:
-            self.lr_scheduler = getattr(lr_scheduler, hp.get('lr_scheduler'))(self.optimizer,
-                                                                              **hp.get('lr_scheduler_kw'))
-        self.metric = getattr(metrics, hp['metric'])()
+        self.move_scale = MoveScale(1) if hp['use_move_scale'] else None
 
     def train_batch(self, enc_inputs, dec_inputs, dec_outputs, continuous_x=None, category_x=None):
         self.optimizer.zero_grad()
+        if self.move_scale is not None:
+            self.move_scale.fit(enc_inputs)
+            enc_inputs, dec_inputs, dec_outputs = self.move_scale.transform(enc_inputs, dec_inputs, dec_outputs)
         enc_lens = enc_inputs.shape[1]
         dec_lens = dec_outputs.shape[1]
 
@@ -57,16 +52,27 @@ class Seq2Seq(BaseModel):
         self.optimizer.step()
         return loss.item()
 
-    def evaluate_batch(self, enc_inputs, dec_inputs, dec_outputs, continuous_x=None, category_x=None):
+    def eval_batch(self, enc_inputs, dec_inputs, dec_outputs, continuous_x=None, category_x=None):
+
+        if self.move_scale is not None:
+            self.move_scale.fit(enc_inputs)
+            enc_inputs, dec_inputs, dec_outputs = self.move_scale.transform(enc_inputs, dec_inputs, dec_outputs)
+
         dec_lens = dec_outputs.shape[1]
         preds = self.predict(enc_inputs, dec_lens, continuous_x, category_x)
         loss = self.loss_fn(preds, dec_outputs)
-        score = self.metric(preds, dec_outputs)
-        return loss, score
+        if self.move_scale is not None:
+            preds, dec_outputs = self.move_scale.inverse(preds, dec_outputs)
+        return loss, preds, dec_outputs
 
-    def predict(self, enc_inputs, dec_lens, continuous_x=None, category_x=None, return_attns=False):
+    def predict(self, enc_inputs, dec_lens, continuous_x=None, category_x=None, return_attns=False, use_move_scale=False):
+        use_move_scale = use_move_scale and self.move_scale is not None
         if not self.hp['use_attn']:
             return_attns = False
+
+        if use_move_scale:
+            self.move_scale.fit(enc_inputs)
+            enc_inputs = self.move_scale.transform(enc_inputs)
 
         enc_lens = enc_inputs.shape[1]
         if self.trans is not None:
@@ -89,6 +95,9 @@ class Seq2Seq(BaseModel):
             else:
                 dec_input_i = pred_i
         preds = torch.cat(preds, dim=1)
+
+        if use_move_scale:
+            preds = self.move_scale.inverse(preds)
 
         if return_attns:
             attns = torch.cat(attns, dim=1)

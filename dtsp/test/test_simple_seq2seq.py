@@ -19,12 +19,16 @@ def test_simple_seq2seq():
         'dropout': 0.2,
         'hidden_size': 72,
         'teacher_forcing_rate': 0.5,
+        'learning_rate': 0.001,
+        'use_move_scale': False,
+    }
+
+    compile_params = {
         'loss_fn': 'MSELoss',
         'optimizer': 'Adam',
-        'learning_rate': 0.001,
         'lr_scheduler': 'CosineAnnealingWarmRestarts',
         'lr_scheduler_kw': {'T_0': 5, 'T_mult': 10},
-        'metric': 'RMSE'
+        'metric': 'RMSE',
     }
 
     n_test = 12
@@ -53,6 +57,7 @@ def test_simple_seq2seq():
     test_ld = DataLoader(test_set, batch_size=batch_size, shuffle=False)
 
     model = SimpleSeq2Seq(hp)
+    model.compile(**compile_params)
     model.fit(epochs, trn_ld, val_ld, early_stopping=10, save_every_n_epochs=None, save_best_model=True)
     model.reload(model.best_model_path())
     print(' - ' * 20)
