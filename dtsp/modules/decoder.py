@@ -6,7 +6,7 @@
 """
 import torch
 import torch.nn as nn
-from . attention import Attention
+from . attention import MultiHeadAttention
 
 
 class SimpleRNNDecoder(nn.Module):
@@ -28,15 +28,16 @@ class SimpleRNNDecoder(nn.Module):
 
 class RNNDecoder(nn.Module):
 
-    def __init__(self, input_size, target_size, hidden_size, rnn_type,
-                 dropout=0.2, activation='Tanh', attn_type='general', use_attn=False, **kwargs):
+    def __init__(self, input_size, target_size, hidden_size, rnn_type, dropout=0.2,
+                 n_head=1, activation='Tanh', attn_type='general', use_attn=False, **kwargs):
         super(RNNDecoder, self).__init__()
         self.rnn = getattr(nn, rnn_type)(input_size, hidden_size, batch_first=True)
 
-        self.attn = Attention(hidden_size, attn_type) if use_attn else None
+        self.attn = MultiHeadAttention(n_head, hidden_size, attn_type) if use_attn else None
         self.use_attn = use_attn
 
-        first_layer = nn.Linear(hidden_size * 2, hidden_size * 2) if use_attn else nn.Linear(hidden_size, hidden_size * 2)
+        first_layer = (nn.Linear(hidden_size * (1 + n_head), hidden_size * 2) if use_attn
+                       else nn.Linear(hidden_size, hidden_size * 2))
         self.dense = nn.Sequential(
             first_layer,
             getattr(nn, activation)(),

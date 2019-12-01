@@ -20,7 +20,7 @@ def test_simple_seq2seq():
         'hidden_size': 72,
         'teacher_forcing_rate': 0.5,
         'learning_rate': 0.001,
-        'use_move_scale': False,
+        'use_move_scale': True,
     }
 
     compile_params = {
@@ -33,16 +33,16 @@ def test_simple_seq2seq():
 
     n_test = 12
     n_val = 12
-    enc_lens = 36
+    enc_lens = 72
     dec_lens = 12
     batch_size = 8
     epochs = 50
     data = example_data()
     series = data['series']
 
-    mu = series[:-(n_test+n_val)].mean(axis=0)
-    std = series[:-(n_test + n_val)].std(axis=0)
-    series = (series - mu) / std
+    # mu = series[:-(n_test+n_val)].mean(axis=0)
+    # std = series[:-(n_test + n_val)].std(axis=0)
+    # series = (series - mu) / std
 
     dataset = SimpleSeq2SeqDataSet(series, enc_lens, dec_lens)
     idxes = list(range(len(dataset)))
@@ -61,5 +61,7 @@ def test_simple_seq2seq():
     model.fit(epochs, trn_ld, val_ld, early_stopping=10, save_every_n_epochs=None, save_best_model=True)
     model.reload(model.best_model_path())
     print(' - ' * 20)
-    print(f'train loss: {model.evaluate_cycle(trn_ld)[0]:.3f}, valid loss: {model.evaluate_cycle(val_ld)[0]:.3f}, test loss :{model.evaluate_cycle(test_ld)[0]:.3f}')
+    print(f'train loss: {model.eval_cycle(trn_ld)[0]:.3f}, '
+          f'valid loss: {model.eval_cycle(val_ld)[0]:.3f}, '
+          f'test loss :{model.eval_cycle(test_ld)[0]:.3f}')
     shutil.rmtree(hp['path'])

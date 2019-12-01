@@ -19,6 +19,7 @@ def test_seq2seq():
         'dropout': 0.1,
         'hidden_size': 128,
         'teacher_forcing_rate': 0.5,
+        'n_head': 2,
         'use_attn': False,
         'trans_hidden_size': 4,
         'trans_continuous_var': None,
@@ -42,7 +43,7 @@ def test_seq2seq():
     enc_lens = 72
     dec_lens = 12
     batch_size = 8
-    epochs = 3
+    epochs = 50
     data = example_data()
     series = data['series']
     categorical = data['categorical_var']
