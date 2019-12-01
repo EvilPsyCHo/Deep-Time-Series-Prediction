@@ -1,7 +1,7 @@
 # Deep-Time-Series-Prediction
 SOTA DeepLearning Models for Time Series Prediction and implemented by PyTorch. **Easy** For using and modified.
 
-## Models
+## Support Models
 
 - [x] Simple Seq2Seq, without Attention, Condtion Variables;
 - [x] Seq2Seq, Multi-Head-Attention, Condtion Model;
@@ -9,52 +9,83 @@ SOTA DeepLearning Models for Time Series Prediction and implemented by PyTorch. 
 - [ ] Condition WaveNet
 - [ ] Wave2Wave with Condition
 
+## Model Performance
+
+|     model     | num of attention | RMSE(test) | loss(test) | loss(val) | loss(train) |
+| :-----------: | :--------------: | :--------: | :--------: | :-------: | :---------: |
+| SimpleSeq2Seq |        /         |   141.54   |   0.725    |   0.682   |    0.476    |
+|    Seq2Seq    |        0         |   120.7    |   0.571    |   0.491   |    0.279    |
+|    Seq2Seq    |        1         |   113.9    |   0.532    |   0.427   |    0.222    |
+|    Seq2Seq    |        4         |   111.7    |   0.534    |   0.422   |    0.192    |
+| SimpleWaveNet |        /         |    84.5    |   0.355    |   0.237   |    0.093    |
+
 ## Quick Start
 
+**Detail Examples in [Model Performance Test Notebook.]([https://github.com/EvilPsyCHo/Deep-Time-Series-Prediction/blob/master/notebooks/Model%20Performance%20Test.ipynb](https://github.com/EvilPsyCHo/Deep-Time-Series-Prediction/blob/master/notebooks/Model Performance Test.ipynb))**
+
 ```python
-from dtsp.dataset import create_simple_wavenet_dataset
-from dtsp.models import SimpleWaveNet
+from dtsp.dataset import Seq2SeqDataSet
+from dtsp.models import Seq2Seq
+from torch.utils.data import DataLoader, Subset
 
-series = np.sin(1000)
-target_dim = 1
-enc_lens = 20
-dec_lens = 10
-n_test = 20
-batch_size = 16
-filters = 36
-n_layers = 7
+# build your dataloader
+# trn_ld = DataLoader(Seq2SeqDataset(..), ..)
 
-trainset, validset = create_simple_wavenet_dataset(series, enc_lens, dec_lens, n_test, batch_size)
+hp = {
+        'path': Path('.').resolve() / 'logs',
+        'target_size': 20,
+        'rnn_type': 'LSTM',
+        'dropout': 0.1,
+        'hidden_size': 128,
+        'teacher_forcing_rate': 0.5,
+        'n_head': 1,
+        'use_attn': True,
+        'trans_hidden_size': 4,
+        'trans_continuous_var': None,
+        'trans_category_var': [(13, 2)],
+        'trans_bidirectional': True,
+        'trans_rnn_type': 'LSTM',
+        'use_move_scale': True,
+    }
 
-model = SimpleWaveNet(target_dim, dec_lens, filters, n_layers, "your_save_dir")
-model.fit_generator(trainset, validset, epochs=100)
+compile_params = {
+    'loss_fn': 'MSELoss',
+    'optimizer': 'Adam',
+    'lr': 0.001,
+    'lr_scheduler': 'CosineAnnealingWarmRestarts',
+    'lr_scheduler_kw': {'T_0': 5, 'T_mult': 10},
+    'metric': 'RMSE',
+}
 
-result = model.predict(series[-enc_lens:].reshape(-1, 1), predict_lens=10)
+model = Seq2Seq(hp)
+model.compile(**compile_params)
+model.fit(epochs, trn_ld, val_ld, early_stopping=10, save_every_n_epochs=None, save_best_model=True)
+
+# model.predict(...)
+# model = Seq2Seq.load(...)
+# model.save(...)
 ```
 
-## Examples
+## Prediction Visualization
 
-### Arima Curve Prediction
+....
 
-Example code in [1_Use_SimpleSeq2Seq_SimpleWaveNet_for_arima_curve_prediction](/notebooks/1_Use_SimpleSeq2Seq_SimpleWaveNet_for_arima_curve_prediction.ipynb)
+## Seq2Seq Attention Visualization
 
-![](./assets/1_arima_curve.png)
+4-head Seq2Seq Attention weights visualization.
 
-- seq2seq
+![attn_0](./assets/attn_0.png)
 
-![seq2seq 1](./assets/1_seq2seq_pred_0.png)
+![attn_1](./assets/attn_1.png)
 
-![seq2seq 2](./assets/1_seq2seq_pred_39.png)
+![attn_2](./assets/attn_2.png)
 
-- wavenet
-
-![wavenet 1](./assets/1_wavenet_pred_0.png)
-
-![wavenet 2](./assets/1_wavenet_pred_39.png)
+![attn_3](./assets/attn_3.png)
 
 ## Usage
 
-Need install Keras first, and then dowload repo.
+- python >= 3.6
+- pytorch ==1.3
 
 ```shell
 python setup.py install
@@ -79,5 +110,4 @@ python setup.py install
 - [Temporal Pattern Attention for Multivariate Time Series Forecasting, 2018](https://arxiv.org/abs/1809.04206)
 - BahdanauAttention: NEURAL MACHINE TRANSLATION BY JOINTLY LEARNING TO ALIGN AND TRANSLATE
 - Effective Approaches to Attention-based Neural Machine Translation
-# https://zhuanlan.zhihu.com/p/40920384
-    # BahdanauAttention与LuongAttention注意力机制简介
+- BahdanauAttention and LuongAttention
