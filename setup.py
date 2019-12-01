@@ -15,7 +15,8 @@ setup(
     description='DeepLearning for Time Series Prediction Library',
     author='zhirui zhou',
     author_email='evilpsycho42@gmail.com',
+    license="Apache 2.0",
     url='https://github.com/EvilPsyCHo/competition',
     packages={'dtsp', 'dtsp.dataset', 'dtsp.models', 'dtsp.modules'},
-    package_data={'dtsp': ['dataset/*.csv']}
+    package_data={'dtsp': ['dataset/*.csv']},
 )
