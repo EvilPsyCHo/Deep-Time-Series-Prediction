@@ -69,7 +69,6 @@ class WaveNet(nn.Module, BaseModel):
         if use_move_scale:
             self.move_scale.fit(x)
             x = self.move_scale.transform(x)
-
         y_pred = []
 
         for step in range(n_steps):

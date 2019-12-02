@@ -9,6 +9,10 @@ from dtsp.models import Seq2Seq
 from torch.utils.data import Subset, DataLoader
 from pathlib import Path
 import shutil
+import chinese_calendar as calendar
+import datetime as dt
+calendar.is_in_lieu(dt.datetime(2019, 9, 27))
+
 
 
 def test_seq2seq():
