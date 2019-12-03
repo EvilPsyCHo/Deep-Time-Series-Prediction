@@ -68,7 +68,15 @@ model.fit(epochs, trn_ld, val_ld, early_stopping=10, save_every_n_epochs=None, s
 
 ## Prediction Visualization
 
-....
+![](./assets/simple_seq2seq.png)
+
+![](./assets/seq2seq_attn0.png)
+
+![](./assets/seq2seq_attn1.png)
+
+![](./assets/seq2seq_attn4.png)
+
+![](./assets/simple_wavenet.png)
 
 ## Seq2Seq Attention Visualization
 
