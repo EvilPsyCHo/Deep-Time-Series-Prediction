@@ -21,7 +21,7 @@ SOTA DeepLearning Models for Time Series Prediction and implemented by PyTorch. 
 
 ## Quick Start
 
-**Detail Examples in [Model Performance Test Notebook.]([https://github.com/EvilPsyCHo/Deep-Time-Series-Prediction/blob/master/notebooks/Model%20Performance%20Test.ipynb](https://github.com/EvilPsyCHo/Deep-Time-Series-Prediction/blob/master/notebooks/Model Performance Test.ipynb))**
+**Detail Examples in [Model Performance Test Notebook.]( https://github.com/EvilPsyCHo/Deep-Time-Series-Prediction/tree/master/notebooks )**
 
 ```python
 from dtsp.dataset import Seq2SeqDataSet
