@@ -62,7 +62,7 @@ model.compile(**compile_params)
 model.fit(epochs, trn_ld, val_ld, early_stopping=10, save_every_n_epochs=None, save_best_model=True)
 
 # model.predict(...)
-# model = Seq2Seq.load(...)
+# model = Seq2Seq.load(file_path)
 # model.save(...)
 ```
 
@@ -101,12 +101,11 @@ python setup.py install
 
 ## Tricks
 
-- Walk Forward Split
-- Windows Data Augments
-- [SMAC3](https://automl.github.io/SMAC3/stable/) Hyperparameter Optimizer
-- Hard encode the long lagged data
-- [COCOB optimizer](https://arxiv.org/abs/1705.07795)
-- Checkpoint & Seed Ensemble
+- Dynamic Scale
+- Walk Forward Data Split
+- Windows Sliding Data Augments
+- TODO: [COCOB optimizer](https://arxiv.org/abs/1705.07795)
+- TODO: [SMAC3](https://automl.github.io/SMAC3/stable/) Hyperparameter Optimizer
 
 ## Refs
 
