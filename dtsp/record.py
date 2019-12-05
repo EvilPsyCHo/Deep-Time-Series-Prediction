@@ -36,8 +36,8 @@ class Record(object):
 
     def use_early_stop(self, patient):
         if self.best_model_epoch is None:
-            return True
-        if self.epochs - self.best_model_epoch <= patient:
             return False
-        else:
+        if self.epochs - self.best_model_epoch - 1 > patient:
             return True
+        else:
+            return False

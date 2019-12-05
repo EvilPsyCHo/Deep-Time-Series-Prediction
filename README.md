@@ -118,3 +118,4 @@ python setup.py install
 - BahdanauAttention: NEURAL MACHINE TRANSLATION BY JOINTLY LEARNING TO ALIGN AND TRANSLATE
 - Effective Approaches to Attention-based Neural Machine Translation
 - BahdanauAttention and LuongAttention
+

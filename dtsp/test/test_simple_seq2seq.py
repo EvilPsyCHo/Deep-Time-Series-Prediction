@@ -58,7 +58,7 @@ def test_simple_seq2seq():
 
     model = SimpleSeq2Seq(hp)
     model.compile(**compile_params)
-    model.fit(epochs, trn_ld, val_ld, early_stopping=10, save_every_n_epochs=None, save_best_model=True)
+    model.fit(epochs, trn_ld, val_ld, early_stopping=1, save_every_n_epochs=None, save_best_model=True)
     model.reload(model.best_model_path())
     print(' - ' * 20)
     print(f'train loss: {model.eval_cycle(trn_ld)[0]:.3f}, '
