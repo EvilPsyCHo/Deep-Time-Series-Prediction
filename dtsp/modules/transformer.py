@@ -13,15 +13,17 @@ class RNNTransformer(nn.Module):
 
     def __init__(self, trans_hidden_size, trans_continuous_var=None,
                  trans_category_var=None, trans_bidirectional=True,
-                 trans_rnn_type='LSTM', dropout=0.1, **kwargs):
+                 trans_rnn_type='LSTM', trans_n_layer=1, trans_residual=True,
+                 dropout=0.1, **kwargs):
         super().__init__()
         self.transformer_hidden_size = trans_hidden_size
         self.bidirectional = trans_bidirectional
+        self.trans_residual = trans_residual
         self.n_continuous_var = 0 if trans_continuous_var is None else trans_continuous_var
         self.n_category_var = 0 if trans_category_var is None else len(trans_category_var)
         self.category_size = 0 if trans_category_var is None else sum([dim for _, dim in trans_category_var])
-        self.rnn = getattr(nn, trans_rnn_type)(self.category_size + self.n_continuous_var,
-                                               trans_hidden_size, batch_first=True, bidirectional=trans_bidirectional)
+        self.rnn = getattr(nn, trans_rnn_type)(self.category_size + self.n_continuous_var, trans_hidden_size,
+                                               batch_first=True, bidirectional=trans_bidirectional, num_layers=trans_n_layer)
         self.embed = None
         if trans_category_var is not None:
             self.embed = Embeddings(trans_category_var)
@@ -40,9 +42,15 @@ class RNNTransformer(nn.Module):
         else:
             raise ValueError
 
-        x_trans, _ = self.rnn(x)
-        outputs = torch.cat([x_trans, x], dim=-1)
+        outputs, _ = self.rnn(x)
+        if self.trans_residual:
+            outputs = torch.cat([outputs, x], dim=-1)
         return outputs
 
     def transform_size(self):
-        return (int(self.bidirectional) + 1) * self.transformer_hidden_size + self.category_size + self.n_continuous_var
+        rnn_size = (int(self.bidirectional) + 1) * self.transformer_hidden_size
+        residual_size = self.category_size + self.n_continuous_var
+        if self.trans_residual:
+            return rnn_size + residual_size
+        else:
+            return rnn_size

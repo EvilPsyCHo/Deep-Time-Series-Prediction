@@ -29,15 +29,15 @@ class SimpleRNNDecoder(nn.Module):
 class RNNDecoder(nn.Module):
 
     def __init__(self, input_size, target_size, hidden_size, rnn_type, dropout=0.2,
-                 n_head=1, activation='Tanh', attn_type='general', use_attn=False, **kwargs):
+                 n_head=1, activation='Tanh', use_attn=False, **kwargs):
         super(RNNDecoder, self).__init__()
         self.rnn = getattr(nn, rnn_type)(input_size, hidden_size, batch_first=True)
 
         self.attn = MultiHeadedAttention(n_head, hidden_size, hidden_size, hidden_size, dropout) if use_attn else None
         self.use_attn = use_attn
 
-        first_layer = (nn.Linear(hidden_size * 2, hidden_size * 2) if use_attn
-                       else nn.Linear(hidden_size, hidden_size * 2))
+        first_layer = (nn.Linear(hidden_size * 2 + input_size, hidden_size * 2) if use_attn
+                       else nn.Linear(hidden_size + input_size, hidden_size * 2))
         self.dense = nn.Sequential(
             first_layer,
             getattr(nn, activation)(),
@@ -48,9 +48,11 @@ class RNNDecoder(nn.Module):
         x, hidden = self.rnn(inputs, hidden)
         if self.use_attn:
             attn_context, weight = self.attn(query=x, key=encoder_outputs, value=encoder_outputs)
-            concat = torch.cat([x, attn_context], dim=2)
+            # update 0.3.4, residual connect
+            concat = torch.cat([x, attn_context, inputs], dim=2)
             outputs = self.dense(concat)
             return outputs, hidden, weight
         else:
-            outputs = self.dense(x)
+            concat = torch.cat([x, inputs], dim=2)
+            outputs = self.dense(concat)
             return outputs, hidden, None

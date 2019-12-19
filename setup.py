@@ -11,7 +11,7 @@ from setuptools import setup
 
 setup(
     name='dtsp',
-    version='0.3.3',
+    version='0.3.4',
     description='DeepLearning for Time Series Prediction Library',
     author='zhirui zhou',
     author_email='evilpsycho42@gmail.com',

@@ -1,5 +1,6 @@
 .idea
 .pytest_cache
 __pycache__
-.build
-.dist
+build
+dist
+dtsp.egg-info
