@@ -24,7 +24,7 @@ def test_seq2seq():
         'hidden_size': 128,
         'teacher_forcing_rate': 0.5,
         'n_head': 2,
-        'use_attn': False,
+        'use_attn': True,
         'trans_hidden_size': 4,
         'trans_continuous_var': None,
         'trans_category_var': [(13, 2)],

@@ -12,7 +12,8 @@ from dtsp.modules import Embeddings
 class RNNTransformer(nn.Module):
 
     def __init__(self, trans_hidden_size, trans_continuous_var=None,
-                 trans_category_var=None, trans_bidirectional=True, trans_rnn_type='LSTM', **kwargs):
+                 trans_category_var=None, trans_bidirectional=True,
+                 trans_rnn_type='LSTM', dropout=0.1, **kwargs):
         super().__init__()
         self.transformer_hidden_size = trans_hidden_size
         self.bidirectional = trans_bidirectional
@@ -24,6 +25,7 @@ class RNNTransformer(nn.Module):
         self.embed = None
         if trans_category_var is not None:
             self.embed = Embeddings(trans_category_var)
+        self.dropout = nn.Dropout(dropout)
 
     def forward(self, continuous_x=None, category_x=None):
         # B x S x N
@@ -38,8 +40,9 @@ class RNNTransformer(nn.Module):
         else:
             raise ValueError
 
-        x, _ = self.rnn(x)
-        return x
+        x_trans, _ = self.rnn(x)
+        outputs = torch.cat([x_trans, x], dim=-1)
+        return outputs
 
     def transform_size(self):
-        return (int(self.bidirectional) + 1) * self.transformer_hidden_size
+        return (int(self.bidirectional) + 1) * self.transformer_hidden_size + self.category_size + self.n_continuous_var

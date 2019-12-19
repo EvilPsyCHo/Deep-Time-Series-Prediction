@@ -6,7 +6,7 @@
 """
 import torch
 import torch.nn as nn
-from . attention import MultiHeadAttention
+from . attention import MultiHeadedAttention
 
 
 class SimpleRNNDecoder(nn.Module):
@@ -33,10 +33,10 @@ class RNNDecoder(nn.Module):
         super(RNNDecoder, self).__init__()
         self.rnn = getattr(nn, rnn_type)(input_size, hidden_size, batch_first=True)
 
-        self.attn = MultiHeadAttention(n_head, hidden_size, attn_type) if use_attn else None
+        self.attn = MultiHeadedAttention(n_head, hidden_size, hidden_size, hidden_size, dropout) if use_attn else None
         self.use_attn = use_attn
 
-        first_layer = (nn.Linear(hidden_size * (1 + n_head), hidden_size * 2) if use_attn
+        first_layer = (nn.Linear(hidden_size * 2, hidden_size * 2) if use_attn
                        else nn.Linear(hidden_size, hidden_size * 2))
         self.dense = nn.Sequential(
             first_layer,
@@ -47,7 +47,7 @@ class RNNDecoder(nn.Module):
     def forward(self, inputs, encoder_outputs, hidden=None):
         x, hidden = self.rnn(inputs, hidden)
         if self.use_attn:
-            attn_context, weight = self.attn(x, encoder_outputs)
+            attn_context, weight = self.attn(query=x, key=encoder_outputs, value=encoder_outputs)
             concat = torch.cat([x, attn_context], dim=2)
             outputs = self.dense(concat)
             return outputs, hidden, weight
