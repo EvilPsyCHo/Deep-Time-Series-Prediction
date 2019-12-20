@@ -65,22 +65,24 @@ class Seq2Seq(torch.nn.Module, BaseModel):
             preds, dec_outputs = self.move_scale.inverse(preds, dec_outputs)
         return loss, preds, dec_outputs
 
-    def predict(self, enc_inputs, dec_lens, continuous_x=None, category_x=None, return_attns=False, use_move_scale=False):
+    def predict(self, inputs, dec_lens, continuous_x=None, category_x=None, return_attns=False, use_move_scale=False):
         use_move_scale = use_move_scale and self.move_scale is not None
         if not self.hp['use_attn']:
             return_attns = False
 
         if use_move_scale:
-            self.move_scale.fit(enc_inputs)
-            enc_inputs = self.move_scale.transform(enc_inputs)
+            self.move_scale.fit(inputs)
+            inputs = self.move_scale.transform(inputs)
 
-        enc_lens = enc_inputs.shape[1]
+        enc_lens = inputs.shape[1]
         if self.trans is not None:
             trans_x = self.trans(continuous_x, category_x)
-            enc_inputs = torch.cat([enc_inputs, trans_x[:, :enc_lens, :]], dim=2)
-            dec_input_i = enc_inputs[:, -1, :].unsqueeze(1)
+            enc_inputs = torch.cat([inputs, trans_x[:, :enc_lens, :]], dim=2)
+            # dec_input_i = enc_inputs[:, -1, :].unsqueeze(1)
+            dec_input_i = torch.cat([inputs[:, -1].unsqueeze(1), trans_x[:, enc_lens].unsqueeze(1)], dim=2)
         else:
-            dec_input_i = enc_inputs[:, -1, :].unsqueeze(1)
+            enc_inputs = inputs
+            dec_input_i = inputs[:, -1, :].unsqueeze(1)
         enc_outputs, hidden = self.enc(enc_inputs)
 
         preds = []
@@ -90,8 +92,10 @@ class Seq2Seq(torch.nn.Module, BaseModel):
             pred_i, hidden, attn_i = self.dec(dec_input_i, enc_outputs, hidden)
             preds.append(pred_i)
             attns.append(attn_i)
+            if i+1 == dec_lens:
+                break
             if self.trans is not None:
-                dec_input_i = torch.cat([pred_i, trans_x[:, enc_lens+i, :].unsqueeze(1)], dim=2)
+                dec_input_i = torch.cat([pred_i, trans_x[:, enc_lens+i+1, :].unsqueeze(1)], dim=2)
             else:
                 dec_input_i = pred_i
         preds = torch.cat(preds, dim=1)

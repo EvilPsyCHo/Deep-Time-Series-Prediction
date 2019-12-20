@@ -36,7 +36,7 @@ def test_simple_seq2seq():
     enc_lens = 72
     dec_lens = 12
     batch_size = 8
-    epochs = 50
+    epochs = 2
     data = example_data()
     series = data['series']
 

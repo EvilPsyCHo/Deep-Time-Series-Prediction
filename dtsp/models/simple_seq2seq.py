@@ -47,13 +47,7 @@ class SimpleSeq2Seq(nn.Module, BaseModel):
             outputs, hidden = self.decoder(dec_inputs, hidden)
         else:
             n_steps = dec_outputs.shape[1]
-            dec_inputs_i = dec_inputs[:, 0].unsqueeze(1)
-            outputs = []
-            for i in range(n_steps):
-                output, hidden = self.decoder(dec_inputs_i, hidden)
-                dec_inputs_i = output
-                outputs.append(output)
-            outputs = torch.cat(outputs, dim=1)
+            outputs = self.predict(enc_inputs, n_steps, use_move_scale=False)
         loss = self.loss_fn(outputs, dec_outputs)
         loss.backward()
         self.optimizer.step()

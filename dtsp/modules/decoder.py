@@ -15,14 +15,14 @@ class SimpleRNNDecoder(nn.Module):
         super(SimpleRNNDecoder, self).__init__()
         self.rnn = getattr(nn, rnn_type)(target_size, hidden_size, batch_first=True)
         self.dense = nn.Sequential(
-            nn.Linear(hidden_size, hidden_size * 2),
+            nn.Linear(hidden_size + target_size, hidden_size * 2),
             getattr(nn, activation)(),
             nn.Dropout(dropout),
             nn.Linear(hidden_size * 2, target_size))
 
     def forward(self, x, hidden=None):
-        x, hidden = self.rnn(x, hidden)
-        outputs = self.dense(x)
+        dec_outputs, hidden = self.rnn(x, hidden)
+        outputs = self.dense(torch.cat([dec_outputs, x], dim=-1))
         return outputs, hidden
 
 
