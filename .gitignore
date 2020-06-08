@@ -1,0 +1,12 @@
+.idea
+.pytest_cache
+.ipynb_checkpoints
+*.zip
+__pycache__
+build
+dist
+dtsp.egg-info
+deepseries.egg-info
+data
+logs
+checkpoints
