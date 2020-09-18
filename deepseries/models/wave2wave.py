@@ -18,7 +18,7 @@ class Wave2Wave(nn.Module):
 
     def __init__(self, target_size, enc_cat_size=None, enc_num_size=None, dec_cat_size=None, dec_num_size=None,
                  residual_channels=32, share_embeds=False, skip_channels=32, num_blocks=3, num_layers=8,
-                 dropout=.0, hidden_channels=128, loss_fn=RMSE(), debug=False, nonlinearity="ReLU"):
+                 dropout=.0, hidden_channels=128, loss_fn=RMSE(), debug=False, nonlinearity="Tanh"):
         super(Wave2Wave, self).__init__()
         self.debug = debug
         self.enc_embeds = Embeddings(enc_cat_size, seq_last=True)
