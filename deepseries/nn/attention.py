@@ -81,7 +81,7 @@ class Attention(nn.Module):
 
 if __name__ == "__main__":
 
-    q = torch.rand(4, 1, 30)
+    q = torch.rand(4, 7, 30)
     k = torch.rand(4, 12, 9)
 
     attn = Attention(heads=3, attn_size=9, query_size=30, value_size=9, key_size=9, dropout=0.)

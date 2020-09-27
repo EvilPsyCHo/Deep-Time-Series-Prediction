@@ -7,8 +7,7 @@
 import torch.nn as nn
 import torch
 import torch.nn.functional as F
-from easydict import EasyDict
-from collections import OrderedDict
+from deepseries.nn import Attention
 
 
 class RNNEncoder(nn.Module):
@@ -21,7 +20,7 @@ class RNNEncoder(nn.Module):
         self.bidirectional = bidirectional
         self.num_layers = num_layers
         self.dropout = dropout
-
+        self.num_direction = 2 if self.bidirectional else 1
         self.input_dropout = nn.Dropout(dropout)
         self.rnn = getattr(nn, rnn_type)(input_size=input_size, bidirectional=bidirectional, batch_first=True,
                                          num_layers=num_layers, hidden_size=hidden_size, dropout=dropout)
@@ -32,7 +31,7 @@ class RNNEncoder(nn.Module):
 
         def _reshape_hidden(hn):
             hn = hn.view(self.num_layers, 2, batch_size, self.hidden_size). \
-                permute(0, 2, 1, 3).reshape(self.num_layers, batch_size, 2 * self.hidden_size)
+                permute(0, 2, 1, 3).reshape(self.num_layers, batch_size, self.num_direction * self.hidden_size)
             return hn
 
         if self.bidirectional and self.rnn_type != "LSTM":
@@ -46,7 +45,7 @@ class RNNEncoder(nn.Module):
 
 class RNNDecoder(nn.Module):
 
-    def __init__(self, input_size, output_size, rnn_type, hidden_size, num_layers, dropout, max_len=7):
+    def __init__(self, input_size, output_size, rnn_type, hidden_size, num_layers, dropout, attn_head, attn_size):
         super().__init__()
         self.input_size = input_size
         self.rnn_type = rnn_type
@@ -58,45 +57,56 @@ class RNNDecoder(nn.Module):
         self.input_dropout = nn.Dropout(dropout)
         self.rnn = getattr(nn, rnn_type)(input_size=input_size, batch_first=True,
                                          num_layers=num_layers, hidden_size=hidden_size, dropout=dropout)
-        self.attn = nn.Linear(input_size + hidden_size, max_len)
-        self.attn_combine = nn.Linear(self.input_size + hidden_size, hidden_size)
-        self.regression = nn.Linear(hidden_size, output_size)
+        self.attention = Attention(attn_head, attn_size, hidden_size, hidden_size, hidden_size, dropout)
+        self.regression = nn.Linear(input_size + attn_size, output_size)
 
     def forward(self, input: torch.Tensor, hidden: torch.Tensor, encoder_output):
         # single step
         # step input -> (batch, 1, N); previous dec hidden (layer, batch, hidden_size)
-        batch_size = input.shape[0]
-        attn_weights = F.softmax(self.attn(torch.cat([input, hidden.permute(1, 0, 2).view(batch_size, -1)])), dim=1)
-        # attn_weights (batch, seq_len)
-        # encoder_output (batch, seq_len, enc_hidden)
-        attn_applied = torch.bmm(encoder_output.transpose(2, 1), attn_weights.unsqueeze(2)).transpose(2, 1)
-        # attn_applied = (batch, 1, enc_hidden)
-        concat = torch.cat([input, attn_applied], dim=2)
-        concat = F.relu(self.attn_combine(concat))
-        output, hidden = self.rnn(concat, hidden)
-        return output, hidden
+        dec_rnn_output, dec_rnn_hidden = self.rnn(input, hidden)
+        # attention
+        attn_applied, attn_weights = self.attention(dec_rnn_output, encoder_output, encoder_output)
+        # predict
+        concat = F.tanh(torch.cat([input, attn_applied], dim=2))
+        output = self.regression(concat)
+        return output, hidden, attn_weights
 
 
 class Seq2Seq(nn.Module):
 
-    def __init__(self, params):
+    def __init__(self, encoder_inputs, decoder_inputs, target_size, decode_length,
+                 rnn_type, hidden_size, num_layers, bidirectional, dropout,
+                 attn_heads, attn_size, loss_fn=nn.MSELoss(), share_embeddings=None):
         super().__init__()
-        self.params = params
-        self.encoder = RNNEncoder()
+        self.encoder_inputs = Inputs(encoder_inputs)
+        self.decoder_inputs = Inputs(decoder_inputs)
+        self.target_size = target_size
+        self.decode_length = decode_length
+        self.loss_fn = loss_fn
+
+        if share_embeddings is not None:
+            pass
+
+        self.encoder = RNNEncoder(self.encoder_inputs.output_size, rnn_type, hidden_size,
+                                  bidirectional, num_layers, dropout)
+        num_directional = 2 if bidirectional else 1
+        self.decoder = RNNDecoder(self.decoder_inputs.output_size + self.target_size, self.target_size, rnn_type,
+                                  hidden_size * num_directional, num_layers, dropout, attn_heads, attn_size)
+
+    def train_batch(self, feed_dict, target, last_target):
+        enc_inputs = self.encoder_inputs(feed_dict)
+        enc_outputs, enc_hidden = self.encoder(enc_inputs)
+        dec_inputs = self.decoder_inputs(feed_dict)
+        dec_inputs = torch.cat([dec_inputs, last_target], dim=2)
+        pred, hidden, attn_weights = self.decoder(dec_inputs, enc_hidden, enc_outputs)
+        loss = self.loss_fn(pred, target)
+        return loss
 
 
-data_config = OrderedDict({
-    "encode":
-        {
-            "categorical": [("month", 13, 2), ("weekday", 8, 2)],
-         },
-})
-
-
-class MultipleEmbedding(nn.Module):
+class MultiEmbeddings(nn.Module):
 
     def __init__(self, *variable_params):
-        # example: *[(name, size, embed_size), ... ]
+        # example: *[(name, num_embeddings, embedding_dim), ... ]
         super().__init__()
         self.params = variable_params
         self.embeddings = nn.ModuleDict({
@@ -107,16 +117,71 @@ class MultipleEmbedding(nn.Module):
         return torch.cat([self.embeddings[name](input[name]) for (name, _, _) in self.params], dim=2)
 
 
-class PlaceHolder(nn.Module):
+class Empty(nn.Module):
 
-    def __init__(self):
+    def __init__(self, size):
+        self.size = size
         super().__init__()
 
     def forward(self, x):
         return x
 
+    def extra_repr(self):
+        return f"{self.size}"
 
-class ContinuousInput(nn.Module):
 
-    def __init__(self, *vars_params):
-        # {"name": xxx, "dtype": "", "size", "
+class Inputs(nn.Module):
+
+    def __init__(self, inputs_config):
+        super().__init__()
+        self.numerical = inputs_config.get("numerical")
+        self.categorical = inputs_config.get("categorical")
+        self.output_size = 0
+        if self.categorical is not None:
+            self.categorical_inputs = MultiEmbeddings(*self.categorical)
+            self.output_size += sum([i[2] for i in self.categorical])
+
+        if self.numerical is not None:
+            self.numerical_inputs = nn.ModuleDict({name: Empty(size) for (name, size) in self.numerical})
+            self.output_size += sum([i[1] for i in self.numerical])
+
+    def forward(self, feed_dict):
+        # batch, seq, N
+        outputs = []
+        if self.categorical is not None:
+            outputs.append(self.categorical_inputs(feed_dict))
+        if self.numerical is not None:
+            for (name, _) in self.numerical:
+                outputs.append(self.numerical_inputs[name](feed_dict[name]))
+        return torch.cat(outputs, dim=2)
+
+
+if __name__ == "__main__":
+    batch_size = 4
+    enc_len = 14
+    dec_len = 7
+
+    encode_inputs = {
+        "numerical": [("enc_flow", 4)],
+        "categorical": [("enc_weekday", 8, 2)],
+    }
+
+    decode_inputs = {
+        "categorical": [("dec_weekday", 8, 2)],
+    }
+
+    batch_feed = {
+        "enc_flow": torch.rand(batch_size, enc_len, 4),
+        "enc_weekday": torch.randint(0, 3, (batch_size, enc_len)),
+        "dec_weekday": torch.randint(0, 3, (batch_size, dec_len)),
+        "target": torch.rand(batch_size, dec_len, 1),
+        "last_target": torch.rand(batch_size, dec_len, 1)
+    }
+
+    model = Seq2Seq(encode_inputs, decode_inputs, 1, dec_len, "GRU", 24, 1, True, 0.1, 3, 12, False)
+    optmizer = torch.optim.Adam(model.parameters(), 0.01)
+    loss = model.train_batch(batch_feed)
+    optmizer.zero_grad()
+    loss.backward()
+    optmizer.step()
+    loss.item()
