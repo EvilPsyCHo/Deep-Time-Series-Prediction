@@ -14,7 +14,7 @@ class RNNDecoder:
     pass
 
 
-class AttnRNNDecoder:
+class AttnRNNDecoder(nn.Module):
 
     def __init__(self, input_size, output_size, rnn_type, hidden_size,
                  num_layers, dropout, attn_head, attn_size, activation="ReLU", residual=False):
@@ -43,8 +43,8 @@ class AttnRNNDecoder:
         attn_applied, attn_weights = self.attention(dec_rnn_output, encoder_output, encoder_output)
         # predict
         if self.residual:
-            concat = self.activation(torch.cat([attn_applied, dec_rnn_hidden, input], dim=2))
+            concat = self.activation(torch.cat([attn_applied, dec_rnn_output, input], dim=2))
         else:
-            concat = self.activation(torch.cat([attn_applied, dec_rnn_hidden], dim=2))
+            concat = self.activation(torch.cat([attn_applied, dec_rnn_output], dim=2))
         output = self.regression(concat)
         return output, hidden, attn_weights
