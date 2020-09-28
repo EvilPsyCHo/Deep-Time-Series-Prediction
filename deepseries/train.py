@@ -49,8 +49,8 @@ class Learner:
 
         with torch.no_grad():
             valid_loss = 0.
-            for x, y, w in data_ld:
-                loss = self.model.batch_loss(x, y, w).item()
+            for x, y in data_ld:
+                loss = self.model.batch_loss(x, y).item()
                 valid_loss += loss / len(data_ld)
         return valid_loss
 
@@ -67,9 +67,9 @@ class Learner:
                     time_start = time.time()
                     self.model.train()
                     train_loss = 0
-                    for j, (x, y, w) in enumerate(train_dl):
+                    for j, (x, y) in enumerate(train_dl):
                         self.optimizer.zero_grad()
-                        loss = self.model.batch_loss(x, y, w)
+                        loss = self.model.batch_loss(x, y)
                         loss.backward()
                         self.optimizer.step()
                         loss = loss.item()
@@ -80,12 +80,7 @@ class Learner:
                             logger.info(f"epoch {self.epochs} / {max_epochs + start_epoch}, "
                                         f"batch {j / len(train_dl) * 100:3.0f}%, "
                                         f"train loss {train_loss / (j + 1):.4f}")
-                    valid_loss = 0
-                    self.model.eval()
-                    with torch.no_grad():
-                        for x, y, w in valid_dl:
-                            loss = self.model.batch_loss(x, y, w).item()
-                            valid_loss += loss / len(valid_dl)
+                    valid_loss = self.eval_cycle(valid_dl)
                     writer.add_scalar("Loss/valid", valid_loss, self.global_steps)
                     epoch_use_time = (time.time() - time_start) / 60
                     logger.info(f"epoch {self.epochs} / {max_epochs + start_epoch}, batch 100%, "
