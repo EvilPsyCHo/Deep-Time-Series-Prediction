@@ -4,7 +4,7 @@
 @contact: evilpsycho42@gmail.com
 @time   : 2020/5/13 10:17
 """
-from deepseries.models.rnn2rnn import RNN2RNN
+from deepseries.model.rnn2rnn import RNN2RNN
 from deepseries.train import Learner
 from deepseries.dataset import TimeSeries, FeatureStore, Seq2SeqDataLoader
 import numpy as np
@@ -14,7 +14,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import torch
-from deepseries.models import BasicSeq2Seq
+from deepseries.model import BasicSeq2Seq
 from deepseries.dataset import Property, TimeSeries, Seq2SeqDataLoader
 from deepseries.nn.loss import MSELoss, RMSELoss
 from deepseries.train import Learner

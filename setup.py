@@ -17,6 +17,6 @@ setup(
     author_email='evilpsycho42@gmail.com',
     license="Apache 2.0",
     url='https://github.com/EvilPsyCHo/Deep-Time-Series-Prediction',
-    packages={'deepseries', 'deepseries.nn', 'deepseries.models'},
+    packages={'deepseries', 'deepseries.nn', 'deepseries.model', 'deepseries.model.seq2seq'},
     # package_data={'deepseries': ['dataset/*.csv']},
 )

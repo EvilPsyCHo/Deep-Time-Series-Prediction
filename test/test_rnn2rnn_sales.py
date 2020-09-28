@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder
 import scipy as sp
 from torch.optim import Adam
-from deepseries.models.rnn2rnn import RNN2RNN
+from deepseries.model.rnn2rnn import RNN2RNN
 from deepseries.train import Learner
 from deepseries.dataset import TimeSeries, Property, Seq2SeqDataLoader
 from deepseries.nn.loss import RMSELoss, MSELoss

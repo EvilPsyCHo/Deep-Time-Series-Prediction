@@ -1,6 +1,4 @@
 # encoding: utf-8
-"""
-@author : zhirui zhou
-@contact: evilpsycho42@gmail.com
-@time   : 2020/9/18 10:18
-"""
+# Author: 周知瑞
+# Mail: evilpsycho42@gmail.com
+from .seq2seq.attention_rnn2rnn import AttnSeq2Seq

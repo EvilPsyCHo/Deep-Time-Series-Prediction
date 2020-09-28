@@ -10,7 +10,7 @@
 @contact: evilpsycho42@gmail.com
 @time   : 2020/5/12 16:33
 """
-from deepseries.models import Wave2Wave
+from deepseries.model import Wave2Wave
 from deepseries.train import Learner
 from deepseries.data import Value, create_seq2seq_data_loader, forward_split
 import numpy as np

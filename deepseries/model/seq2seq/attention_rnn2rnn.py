@@ -6,9 +6,9 @@
 """
 import torch
 import torch.nn as nn
-from deepseries.models.seq2seq.utils import *
-from deepseries.models.seq2seq.encoder import RNNEncoder
-from deepseries.models.seq2seq.decoder import AttnRNNDecoder
+from deepseries.model.seq2seq.utils import *
+from deepseries.model.seq2seq.encoder import RNNEncoder
+from deepseries.model.seq2seq.decoder import AttnRNNDecoder
 import random
 
 
@@ -87,28 +87,28 @@ class AttnSeq2Seq(nn.Module):
         loss = self.loss_fn(preds, target)
         return loss
 
-
-if __name__ == "__main__":
-    batch_size = 4
-    dec_len = 7
-    enc_len = 14
-    target_size = 8
-    hidden_size = 32
-    num_layers = 1
-    bidirectional = False
-    dropout = 0.5
-    share_embeddings = [("enc_week", "dec_week")]
-
-    encode_inputs = {"numerical": [("enc_target", 8)], "categorical": [("enc_week", 8, 2)]}
-    decode_inputs = {"categorical": [("dec_week", 8, 2)]}
-    model = AttnSeq2Seq(encode_inputs, decode_inputs, target_size, dec_len, "LSTM", hidden_size, num_layers,
-                        bidirectional, dropout, 2, 12, share_embeddings=share_embeddings, teacher_forcing_rate=0.5)
-    feed_dict = {"enc_target": torch.rand(batch_size, enc_len, target_size),
-                 "dec_target": torch.rand(batch_size, dec_len, target_size),
-                 "enc_week": torch.randint(0, 4, (batch_size, enc_len)),
-                 "dec_week": torch.randint(0, 4, (batch_size, dec_len))
-                 }
-    target = torch.rand(batch_size, dec_len, target_size)
-    model.batch_loss(feed_dict, target)
-
-    preds, attns = model.predict(feed_dict, 7, True)
+#
+# if __name__ == "__main__":
+#     batch_size = 4
+#     dec_len = 7
+#     enc_len = 14
+#     target_size = 8
+#     hidden_size = 32
+#     num_layers = 1
+#     bidirectional = False
+#     dropout = 0.5
+#     share_embeddings = [("enc_week", "dec_week")]
+#
+#     encode_inputs = {"numerical": [("enc_target", 8)], "categorical": [("enc_week", 8, 2)]}
+#     decode_inputs = {"categorical": [("dec_week", 8, 2)]}
+#     model = AttnSeq2Seq(encode_inputs, decode_inputs, target_size, dec_len, "LSTM", hidden_size, num_layers,
+#                         bidirectional, dropout, 2, 12, share_embeddings=share_embeddings, teacher_forcing_rate=0.5)
+#     feed_dict = {"enc_target": torch.rand(batch_size, enc_len, target_size),
+#                  "dec_target": torch.rand(batch_size, dec_len, target_size),
+#                  "enc_week": torch.randint(0, 4, (batch_size, enc_len)),
+#                  "dec_week": torch.randint(0, 4, (batch_size, dec_len))
+#                  }
+#     target = torch.rand(batch_size, dec_len, target_size)
+#     model.batch_loss(feed_dict, target)
+#
+#     preds, attns = model.predict(feed_dict, 7, True)

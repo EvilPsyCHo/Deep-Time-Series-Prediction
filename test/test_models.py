@@ -4,7 +4,7 @@
 @contact: evilpsycho42@gmail.com
 @time   : 2020/5/12 16:33
 """
-from deepseries.models import RNN2RNN, Wave2WaveV1
+from deepseries.model import RNN2RNN, Wave2WaveV1
 from deepseries.train import Learner
 from deepseries.dataset import Values, create_seq2seq_data_loader, forward_split
 import numpy as np

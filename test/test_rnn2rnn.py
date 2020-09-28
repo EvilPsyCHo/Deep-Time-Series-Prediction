@@ -10,7 +10,7 @@ import numpy as np
 import scipy as sp
 import gc
 from sklearn.preprocessing import LabelEncoder
-from deepseries.models import Wave2WaveV1, RNN2RNN
+from deepseries.model import Wave2WaveV1, RNN2RNN
 from deepseries.train import Learner
 from deepseries.dataset import Values, create_seq2seq_data_loader, forward_split
 import deepseries.functional as F
