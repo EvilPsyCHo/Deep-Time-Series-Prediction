@@ -30,6 +30,10 @@ class TemporalConv1D(_ConvNd):
                          self.padding, self.dilation, self.groups)
         return x[:, :, :-self.padding[0]]
 
+    def decode(self, x):
+        return F.conv1d(x, self.weight, self.bias, self.stride,
+                        0, 1, self.groups)
+
 
 class TemporalBlock(nn.Module):
 
@@ -60,5 +64,8 @@ class TemporalBlock(nn.Module):
 if __name__ == "__main__":
     # test causal conv
     x = torch.rand(4, 12, 100)
-    conv = TemporalConv1D(12, 4, kernel_size=3, dilation=3)
+    conv = TemporalConv1D(12, 4, kernel_size=2, dilation=3)
     print(f"conv input shape: {x.shape}, output shape: {conv(x).shape}")
+
+    t = torch.rand(4, 12, 2)
+    print(f"conv input shape: {t.shape}, output shape: {conv.decode(t).shape}")
